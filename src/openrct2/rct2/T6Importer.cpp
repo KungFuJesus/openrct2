@@ -27,6 +27,14 @@ namespace RCT2
 {
     static std::mutex _objectLookupMutex;
 
+    static void swapTD6(TD6Track &td6)
+    {
+        td6.Cost = ByteSwapBE(td6.Cost);
+        td6.RideLength = ByteSwapBE(td6.RideLength);
+        td6.UpkeepCost = ByteSwapBE(td6.UpkeepCost);
+        td6.Flags2 = ByteSwapBE(td6.Flags2);
+    }
+
     /**
      * Class to import RollerCoaster Tycoon 2 track designs (*.TD6).
      */
@@ -70,6 +78,10 @@ namespace RCT2
             TD6Track td6{};
             // Rework td6 so that it is just the fields
             _stream.Read(&td6, 0xA3);
+
+#if RCT2_ENDIANNESS == __ORDER_BIG_ENDIAN__
+            swapTD6(td6);
+#endif
 
             td->type = td6.Type; // 0x00
             td->vehicle_type = td6.VehicleType;

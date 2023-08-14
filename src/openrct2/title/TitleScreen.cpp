@@ -312,6 +312,7 @@ bool TitleScreen::TryLoadSequence(bool loadPreview)
         }
 
         size_t numSequences = TitleSequenceManager::GetCount();
+        LOG_VERBOSE("%lu title sequences", numSequences);
         if (numSequences > 0)
         {
             size_t targetSequence = _currentSequence;

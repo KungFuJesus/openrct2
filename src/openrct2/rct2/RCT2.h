@@ -1086,6 +1086,9 @@ namespace RCT2
         "rct1ll.terrain_edge.green",        "rct1ll.terrain_edge.stone_brown",  "rct1ll.terrain_edge.stone_grey",
         "rct1ll.terrain_edge.skyscraper_a", "rct1ll.terrain_edge.skyscraper_b",
     };
+    void swapS6Hdr(S6Header &hdr);
+    void swapS6Info(S6Info &info);
+    void swapS6(S6Data &s6);
 } // namespace RCT2
 
 std::vector<uint8_t> DecryptSea(const fs::path& path);

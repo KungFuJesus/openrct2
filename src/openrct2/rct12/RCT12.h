@@ -313,6 +313,7 @@ struct RCT12EightCarsCorruptElement15;
 
 struct RCT12TileElementBase
 {
+    friend class S4Importer;
     uint8_t Type;            // 0
     uint8_t Flags;           // 1. Upper nibble: Flags. Lower nibble: occupied quadrants (one bit per quadrant).
     uint8_t BaseHeight;      // 2

@@ -243,10 +243,17 @@ private:
             auto stream = GetStreamFromRCT2Scenario(path);
             auto chunkReader = SawyerChunkReader(stream.get());
 
-            const auto header = chunkReader.ReadChunkAs<RCT2::S6Header>();
+            const auto &header = chunkReader.ReadChunkAs<RCT2::S6Header>();
+#if RCT2_ENDIANNESS == __ORDER_BIG_ENDIAN__
+            RCT2::swapS6Hdr(const_cast<RCT2::S6Header&>(header));
+#endif
+
             if (header.Type == S6_TYPE_SCENARIO)
             {
                 auto info = chunkReader.ReadChunkAs<RCT2::S6Info>();
+#if RCT2_ENDIANNESS == __ORDER_BIG_ENDIAN__
+                RCT2::swapS6Info(info);
+#endif
                 // If the name or the details contain a colour code, they might be in UTF-8 already.
                 // This is caused by a bug that was in OpenRCT2 for 3 years.
                 if (!IsLikelyUTF8(info.Name) && !IsLikelyUTF8(info.Details))
@@ -670,6 +677,10 @@ private:
 
             // Load header
             auto header = fs.ReadValue<RCT2::ScoresHeader>();
+            header.Var0 = SWAP_IF_BE(header.Var0);
+            header.Var4 = SWAP_IF_BE(header.Var4);
+            header.Var8 = SWAP_IF_BE(header.Var8);
+            header.ScenarioCount = SWAP_IF_BE(header.ScenarioCount);
             for (uint32_t i = 0; i < header.ScenarioCount; i++)
             {
                 // Read legacy entry
@@ -686,11 +697,11 @@ private:
                             notFound = false;
 
                             // Check if legacy highscore is better
-                            if (scBasic.CompanyValue > highscore->company_value)
+                            if (SWAP_IF_BE(scBasic.CompanyValue) > highscore->company_value)
                             {
                                 std::string name = RCT2StringToUTF8(scBasic.CompletedBy, RCT2LanguageId::EnglishUK);
                                 highscore->name = name;
-                                highscore->company_value = scBasic.CompanyValue;
+                                highscore->company_value = SWAP_IF_BE(scBasic.CompanyValue);
                                 highscore->timestamp = DATETIME64_MIN;
                                 break;
                             }
@@ -702,7 +713,7 @@ private:
                         highscore->fileName = scBasic.Path;
                         std::string name = RCT2StringToUTF8(scBasic.CompletedBy, RCT2LanguageId::EnglishUK);
                         highscore->name = name;
-                        highscore->company_value = scBasic.CompanyValue;
+                        highscore->company_value = SWAP_IF_BE(scBasic.CompanyValue);
                         highscore->timestamp = DATETIME64_MIN;
                     }
                 }
@@ -753,15 +764,15 @@ private:
         try
         {
             auto fs = FileStream(path, FILE_MODE_WRITE);
-            fs.WriteValue<uint32_t>(HighscoreFileVersion);
-            fs.WriteValue<uint32_t>(static_cast<uint32_t>(_highscores.size()));
+            fs.WriteValue<uint32_t>(SWAP_IF_BE(HighscoreFileVersion));
+            fs.WriteValue<uint32_t>(SWAP_IF_BE(static_cast<uint32_t>(_highscores.size())));
             for (size_t i = 0; i < _highscores.size(); i++)
             {
                 const ScenarioHighscoreEntry* highscore = _highscores[i];
                 fs.WriteString(highscore->fileName);
                 fs.WriteString(highscore->name);
-                fs.WriteValue(highscore->company_value);
-                fs.WriteValue(highscore->timestamp);
+                fs.WriteValue(SWAP_IF_BE(highscore->company_value));
+                fs.WriteValue(SWAP_IF_BE(highscore->timestamp));
             }
         }
         catch (const std::exception&)

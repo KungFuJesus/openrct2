@@ -446,8 +446,11 @@ void ImageTable::Read(IReadObjectContext* context, OpenRCT2::IStream* stream)
 
     try
     {
-        uint32_t numImages = stream->ReadValue<uint32_t>();
-        uint32_t imageDataSize = stream->ReadValue<uint32_t>();
+        uint32_t numImages = SWAP_IF_BE(stream->ReadValue<uint32_t>());
+        uint32_t imageDataSize = SWAP_IF_BE(stream->ReadValue<uint32_t>());
+
+        LOG_VERBOSE("reading %u images", numImages);
+        LOG_VERBOSE("img dat size = %u", imageDataSize);
 
         uint64_t headerTableSize = numImages * 16;
         uint64_t remainingBytes = stream->GetLength() - stream->GetPosition() - headerTableSize;
@@ -471,22 +474,24 @@ void ImageTable::Read(IReadObjectContext* context, OpenRCT2::IStream* stream)
         for (uint32_t i = 0; i < numImages; i++)
         {
             G1Element g1Element{};
+            //LOG_VERBOSE("parsing img at index %u", i);
 
-            uintptr_t imageDataOffset = static_cast<uintptr_t>(stream->ReadValue<uint32_t>());
+            uintptr_t imageDataOffset = static_cast<uintptr_t>(SWAP_IF_BE(stream->ReadValue<uint32_t>()));
             g1Element.offset = reinterpret_cast<uint8_t*>(imageDataBase + imageDataOffset);
 
-            g1Element.width = stream->ReadValue<int16_t>();
-            g1Element.height = stream->ReadValue<int16_t>();
-            g1Element.x_offset = stream->ReadValue<int16_t>();
-            g1Element.y_offset = stream->ReadValue<int16_t>();
-            g1Element.flags = stream->ReadValue<uint16_t>();
-            g1Element.zoomed_offset = stream->ReadValue<uint16_t>();
+            g1Element.width = SWAP_IF_BE(stream->ReadValue<int16_t>());
+            g1Element.height = SWAP_IF_BE(stream->ReadValue<int16_t>());
+            g1Element.x_offset = SWAP_IF_BE(stream->ReadValue<int16_t>());
+            g1Element.y_offset = SWAP_IF_BE(stream->ReadValue<int16_t>());
+            g1Element.flags = SWAP_IF_BE(stream->ReadValue<uint16_t>());
+            g1Element.zoomed_offset = SWAP_IF_BE(stream->ReadValue<uint16_t>());
 
             newEntries.push_back(std::move(g1Element));
         }
 
         // Read g1 element data
         size_t readBytes = static_cast<size_t>(stream->TryRead(data.get(), dataSize));
+        LOG_VERBOSE("read %lu bytes", readBytes);
 
         // If data is shorter than expected (some custom objects are unfortunately like that)
         size_t unreadBytes = dataSize - readBytes;

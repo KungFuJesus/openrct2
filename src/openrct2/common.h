@@ -25,6 +25,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include "core/Endianness.h"
 
 // Define MAX_PATH for various headers that don't want to include system headers
 // just for MAX_PATH
@@ -33,6 +34,24 @@
 #endif
 
 using colour_t = uint8_t;
+
+#    if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#        define RCT2_ENDIANNESS __ORDER_LITTLE_ENDIAN__
+#    else
+#        define RCT2_ENDIANNESS __ORDER_BIG_ENDIAN__
+#    endif
+
+#if RCT2_ENDIANNESS == __ORDER_LITTLE_ENDIAN__
+#define SWAP_IF_BE(x) (x)
+#else
+#define SWAP_IF_BE(x) ByteSwapBE(x)
+#endif
+
+#if RCT2_ENDIANNESS == __ORDER_LITTLE_ENDIAN__
+#define SWAP_IF_LE(x) ByteSwapBE(x)
+#else
+#define SWAP_IF_LE(x) (x)
+#endif
 
 // Gets the name of a symbol as a C string
 #define nameof(symbol) #symbol

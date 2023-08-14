@@ -69,6 +69,24 @@ namespace OpenRCT2
         MemoryStream _buffer;
         ChunkEntry _currentChunk;
 
+        void swapHeader(Header &h)
+        {
+            h.Magic = ByteSwapBE(h.Magic);
+            h.TargetVersion = ByteSwapBE(h.TargetVersion);
+            h.MinVersion = ByteSwapBE(h.MinVersion);
+            h.NumChunks = ByteSwapBE(h.NumChunks);
+            h.UncompressedSize = ByteSwapBE(h.UncompressedSize);
+            h.Compression= ByteSwapBE(h.Compression);
+            h.CompressedSize = ByteSwapBE(h.CompressedSize);
+        }
+
+        void swapChunk(ChunkEntry &c)
+        {
+            c.Id = ByteSwapBE(c.Id);
+            c.Offset = ByteSwapBE(c.Offset);
+            c.Length = ByteSwapBE(c.Length);
+        }
+
     public:
         OrcaStream(IStream& stream, const Mode mode)
         {
@@ -77,11 +95,17 @@ namespace OpenRCT2
             if (mode == Mode::READING)
             {
                 _header = _stream->ReadValue<Header>();
+#if RCT2_ENDIANNESS == __ORDER_BIG_ENDIAN__
+                swapHeader(_header);
+#endif
 
                 _chunks.clear();
                 for (uint32_t i = 0; i < _header.NumChunks; i++)
                 {
                     auto entry = _stream->ReadValue<ChunkEntry>();
+#if RCT2_ENDIANNESS == __ORDER_BIG_ENDIAN__
+                    swapChunk(entry);
+#endif
                     _chunks.push_back(entry);
                 }
 
@@ -149,10 +173,22 @@ namespace OpenRCT2
                 }
 
                 // Write header and chunk table
+#if RCT2_ENDIANNESS == __ORDER_BIG_ENDIAN__
+                Header headerLE = _header;
+                swapHeader(headerLE);
+                _stream->WriteValue(headerLE);
+#else
                 _stream->WriteValue(_header);
+#endif
                 for (const auto& chunk : _chunks)
                 {
+#if RCT2_ENDIANNESS == __ORDER_BIG_ENDIAN__
+                    ChunkEntry chunkLE = chunk;
+                    swapChunk(chunkLE);
+                    _stream->WriteValue(chunkLE);
+#else
                     _stream->WriteValue(chunk);
+#endif
                 }
 
                 // Write chunk data
@@ -526,12 +562,14 @@ namespace OpenRCT2
                     {
                         int64_t raw{};
                         Read(&raw, sizeof(raw));
+                        raw = SWAP_IF_BE(raw);
                         return static_cast<T>(raw);
                     }
                     else
                     {
                         uint64_t raw{};
                         Read(&raw, sizeof(raw));
+                        raw = SWAP_IF_BE(raw);
                         return static_cast<T>(raw);
                     }
                 }
@@ -541,6 +579,7 @@ namespace OpenRCT2
                     {
                         int32_t raw{};
                         Read(&raw, sizeof(raw));
+                        raw = SWAP_IF_BE(raw);
                         if (raw < std::numeric_limits<T>::min() || raw > std::numeric_limits<T>::max())
                         {
                             throw std::runtime_error("Value is incompatible with internal type.");
@@ -551,6 +590,7 @@ namespace OpenRCT2
                     {
                         uint32_t raw{};
                         Read(&raw, sizeof(raw));
+                        raw = SWAP_IF_BE(raw);
                         if (raw > std::numeric_limits<T>::max())
                         {
                             throw std::runtime_error("Value is incompatible with internal type.");
@@ -567,11 +607,13 @@ namespace OpenRCT2
                     if constexpr (std::is_signed<T>())
                     {
                         auto raw = static_cast<int64_t>(value);
+                        raw = SWAP_IF_BE(raw);
                         Write(&raw, sizeof(raw));
                     }
                     else
                     {
                         auto raw = static_cast<uint64_t>(value);
+                        raw = SWAP_IF_BE(raw);
                         Write(&raw, sizeof(raw));
                     }
                 }
@@ -580,11 +622,13 @@ namespace OpenRCT2
                     if constexpr (std::is_signed<T>())
                     {
                         auto raw = static_cast<int32_t>(value);
+                        raw = SWAP_IF_BE(raw);
                         Write(&raw, sizeof(raw));
                     }
                     else
                     {
                         auto raw = static_cast<uint32_t>(value);
+                        raw = SWAP_IF_BE(raw);
                         Write(&raw, sizeof(raw));
                     }
                 }
@@ -625,8 +669,8 @@ namespace OpenRCT2
                 auto& arrayState = _arrayStack.emplace();
                 if (_mode == Mode::READING)
                 {
-                    arrayState.Count = Read<uint32_t>();
-                    arrayState.ElementSize = Read<uint32_t>();
+                    arrayState.Count = SWAP_IF_BE(Read<uint32_t>());
+                    arrayState.ElementSize = SWAP_IF_BE(Read<uint32_t>());
                     arrayState.LastPos = _buffer.GetPosition();
                     return arrayState.Count;
                 }
@@ -686,8 +730,8 @@ namespace OpenRCT2
                         throw std::runtime_error("Array data was written but no elements were added.");
                     }
                     _buffer.SetPosition(arrayState.StartPos);
-                    Write(static_cast<uint32_t>(arrayState.Count));
-                    Write(static_cast<uint32_t>(arrayState.ElementSize));
+                    Write(SWAP_IF_BE(static_cast<uint32_t>(arrayState.Count)));
+                    Write(SWAP_IF_BE(static_cast<uint32_t>(arrayState.ElementSize)));
                     _buffer.SetPosition(backupPos);
                 }
                 _arrayStack.pop();

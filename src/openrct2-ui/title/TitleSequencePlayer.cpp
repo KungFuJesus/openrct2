@@ -107,11 +107,13 @@ namespace OpenRCT2::Title
 
             if (_sequence == nullptr)
             {
+                //LOG_VERBOSE("null sequence");
                 return false;
             }
 
             if (_sequence->Commands.empty())
             {
+                LOG_VERBOSE("empty commands");
                 return false;
             }
 

@@ -150,7 +150,7 @@ namespace RCT1
             td->vehicle_object = ObjectEntryDescriptor(vehicleObject);
             td->vehicle_type = td4Base.VehicleType;
 
-            td->flags = td4Base.Flags;
+            td->flags = SWAP_IF_BE(td4Base.Flags);
             td->colour_scheme = td4Base.VersionAndColourScheme & 0x3;
 
             // Vehicle colours
@@ -213,7 +213,7 @@ namespace RCT1
                 td4Base.OperationSetting, GetRideTypeDescriptor(td->type).OperatingSettings.MaxValue);
             td->max_speed = td4Base.MaxSpeed;
             td->average_speed = td4Base.AverageSpeed;
-            td->ride_length = td4Base.RideLength;
+            td->ride_length = SWAP_IF_BE(td4Base.RideLength);
             td->max_positive_vertical_g = td4Base.MaxPositiveVerticalG;
             td->max_negative_vertical_g = td4Base.MaxNegativeVerticalG;
             td->max_lateral_g = td4Base.MaxLateralG;
@@ -232,7 +232,7 @@ namespace RCT1
             td->excitement = td4Base.Excitement;
             td->intensity = td4Base.Intensity;
             td->nausea = td4Base.Nausea;
-            td->upkeep_cost = ToMoney64(td4Base.UpkeepCost);
+            td->upkeep_cost = ToMoney64(SWAP_IF_BE(td4Base.UpkeepCost));
             td->space_required_x = 255;
             td->space_required_y = 255;
             td->lift_hill_speed = 5;

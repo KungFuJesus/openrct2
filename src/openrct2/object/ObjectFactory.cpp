@@ -262,6 +262,8 @@ namespace ObjectFactory
             auto chunkReader = SawyerChunkReader(&fs);
 
             RCTObjectEntry entry = fs.ReadValue<RCTObjectEntry>();
+            entry.flags = SWAP_IF_BE(entry.flags);
+            entry.checksum = SWAP_IF_BE(entry.checksum);
 
             if (entry.GetType() != ObjectType::ScenarioText)
             {

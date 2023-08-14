@@ -482,6 +482,7 @@ namespace OpenRCT2::Title
 
     static std::vector<uint8_t> ReadScriptFile(const std::string& path)
     {
+        LOG_VERBOSE("Reading script %s", path.c_str());
         std::vector<uint8_t> result;
         try
         {

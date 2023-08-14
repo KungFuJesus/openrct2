@@ -53,7 +53,7 @@ NetworkReadPacket NetworkConnection::ReadPacket()
 
         // Normalise values.
         header.Size = Convert::NetworkToHost(header.Size);
-        header.Id = ByteSwapBE(header.Id);
+        header.Id = SWAP_IF_LE(header.Id);
 
         // NOTE: For compatibility reasons for the master server we need to remove sizeof(Header.Id) from the size.
         // Previously the Id field was not part of the header rather part of the body.
@@ -106,7 +106,7 @@ bool NetworkConnection::SendPacket(NetworkPacket& packet)
     // Previously the Id field was not part of the header rather part of the body.
     header.Size += sizeof(header.Id);
     header.Size = Convert::HostToNetwork(header.Size);
-    header.Id = ByteSwapBE(header.Id);
+    header.Id = SWAP_IF_LE(header.Id);
 
     buffer.insert(buffer.end(), reinterpret_cast<uint8_t*>(&header), reinterpret_cast<uint8_t*>(&header) + sizeof(header));
     buffer.insert(buffer.end(), packet.Data.begin(), packet.Data.end());

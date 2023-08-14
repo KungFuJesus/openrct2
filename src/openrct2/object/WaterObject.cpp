@@ -27,7 +27,7 @@
 void WaterObject::ReadLegacy(IReadObjectContext* context, OpenRCT2::IStream* stream)
 {
     stream->Seek(14, OpenRCT2::STREAM_SEEK_CURRENT);
-    _legacyType.flags = stream->ReadValue<uint16_t>();
+    _legacyType.flags = SWAP_IF_BE(stream->ReadValue<uint16_t>());
 
     GetStringTable().Read(context, stream, ObjectStringID::NAME);
     GetImageTable().Read(context, stream);

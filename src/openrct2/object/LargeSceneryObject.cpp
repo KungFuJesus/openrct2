@@ -19,6 +19,7 @@
 #include "../localisation/Language.h"
 #include "../world/Banner.h"
 #include "../world/Location.hpp"
+#include "../core/Endianness.h"
 
 #include <algorithm>
 #include <iterator>
@@ -26,11 +27,11 @@
 static RCTLargeSceneryText ReadLegacy3DFont(OpenRCT2::IStream& stream)
 {
     RCTLargeSceneryText _3dFontLegacy = {};
-    _3dFontLegacy.offset[0].x = stream.ReadValue<int16_t>();
-    _3dFontLegacy.offset[0].y = stream.ReadValue<int16_t>();
-    _3dFontLegacy.offset[1].x = stream.ReadValue<int16_t>();
-    _3dFontLegacy.offset[1].y = stream.ReadValue<int16_t>();
-    _3dFontLegacy.max_width = stream.ReadValue<uint16_t>();
+    _3dFontLegacy.offset[0].x = SWAP_IF_BE(stream.ReadValue<int16_t>());
+    _3dFontLegacy.offset[0].y = SWAP_IF_BE(stream.ReadValue<int16_t>());
+    _3dFontLegacy.offset[1].x = SWAP_IF_BE(stream.ReadValue<int16_t>());
+    _3dFontLegacy.offset[1].y = SWAP_IF_BE(stream.ReadValue<int16_t>());
+    _3dFontLegacy.max_width = SWAP_IF_BE(stream.ReadValue<uint16_t>());
     stream.ReadValue<uint16_t>();
     _3dFontLegacy.flags = stream.ReadValue<uint8_t>();
     _3dFontLegacy.num_images = stream.ReadValue<uint8_t>();
@@ -56,8 +57,8 @@ void LargeSceneryObject::ReadLegacy(IReadObjectContext* context, OpenRCT2::IStre
     stream->Seek(6, OpenRCT2::STREAM_SEEK_CURRENT);
     _legacyType.tool_id = static_cast<CursorID>(stream->ReadValue<uint8_t>());
     _legacyType.flags = stream->ReadValue<uint8_t>();
-    _legacyType.price = stream->ReadValue<int16_t>() * 10;
-    _legacyType.removal_price = stream->ReadValue<int16_t>() * 10;
+    _legacyType.price = SWAP_IF_BE(stream->ReadValue<int16_t>()) * 10;
+    _legacyType.removal_price = SWAP_IF_BE(stream->ReadValue<int16_t>()) * 10;
     stream->Seek(5, OpenRCT2::STREAM_SEEK_CURRENT);
     _legacyType.scenery_tab_id = OBJECT_ENTRY_INDEX_NULL;
     _legacyType.scrolling_mode = stream->ReadValue<uint8_t>();
@@ -66,6 +67,8 @@ void LargeSceneryObject::ReadLegacy(IReadObjectContext* context, OpenRCT2::IStre
     GetStringTable().Read(context, stream, ObjectStringID::NAME);
 
     RCTObjectEntry sgEntry = stream->ReadValue<RCTObjectEntry>();
+    sgEntry.checksum = SWAP_IF_BE(sgEntry.checksum);
+    sgEntry.flags = SWAP_IF_BE(sgEntry.flags);
     SetPrimarySceneryGroup(ObjectEntryDescriptor(sgEntry));
 
     if (_legacyType.flags & LARGE_SCENERY_FLAG_3D_TEXT)
@@ -163,11 +166,11 @@ std::vector<LargeSceneryTile> LargeSceneryObject::ReadTiles(OpenRCT2::IStream* s
 
     auto ReadLegacyTile = [&stream]() {
         LargeSceneryTile tile{};
-        tile.x_offset = stream->ReadValue<int16_t>();
-        tile.y_offset = stream->ReadValue<int16_t>();
-        tile.z_offset = stream->ReadValue<int16_t>();
+        tile.x_offset = SWAP_IF_BE(stream->ReadValue<int16_t>());
+        tile.y_offset = SWAP_IF_BE(stream->ReadValue<int16_t>());
+        tile.z_offset = SWAP_IF_BE(stream->ReadValue<int16_t>());
         tile.z_clearance = stream->ReadValue<uint8_t>();
-        tile.flags = stream->ReadValue<uint16_t>();
+        tile.flags = SWAP_IF_BE(stream->ReadValue<uint16_t>());
         return tile;
     };
 

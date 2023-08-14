@@ -81,6 +81,7 @@ using namespace OpenRCT2;
 
 namespace RCT1
 {
+
     class S4Importer final : public IParkImporter
     {
     private:
@@ -159,6 +160,9 @@ namespace RCT1
             IStream* stream, bool isScenario, [[maybe_unused]] bool skipObjectCheck, const u8string& path) override
         {
             _s4 = *ReadAndDecodeS4(stream, isScenario);
+#if RCT2_ENDIANNESS == __ORDER_BIG_ENDIAN__
+            swaps4();
+#endif
             _s4Path = path;
             _isScenario = isScenario;
             _gameVersion = SawyerCodingDetectRCT1Version(_s4.GameVersion) & FILE_VERSION_MASK;
@@ -204,10 +208,12 @@ namespace RCT1
         bool GetDetails(ScenarioIndexEntry* dst) override
         {
             *dst = {};
+            LOG_VERBOSE("In GetDetails...");
 
             SourceDescriptor desc;
             // If no entry is found, this is a custom scenario.
             bool isOfficial = ScenarioSources::TryGetById(_s4.ScenarioSlotIndex, &desc);
+            LOG_VERBOSE("is official = %d", isOfficial);
 
             dst->Category = desc.category;
             dst->SourceGame = ScenarioSource{ desc.source };
@@ -255,6 +261,8 @@ namespace RCT1
 
             String::Set(dst->Name, sizeof(dst->Name), name.c_str());
             String::Set(dst->Details, sizeof(dst->Details), details.c_str());
+            LOG_VERBOSE("returning from GetDetails");
+
 
             return true;
         }
@@ -498,7 +506,7 @@ namespace RCT1
                         AddEntryForSmallScenery(tileElement->AsSmallScenery()->GetEntryIndex());
                         break;
                     case RCT12TileElementType::LargeScenery:
-                        AddEntryForLargeScenery(tileElement->AsLargeScenery()->GetEntryIndex());
+                        AddEntryForLargeScenery(SWAP_IF_BE(tileElement->AsLargeScenery()->GetEntryIndex()));
                         break;
                     case RCT12TileElementType::Wall:
                     {
@@ -814,6 +822,7 @@ namespace RCT1
             }
 
             // Ride name
+            src->Name = SWAP_IF_BE(src->Name);
             if (IsUserStringID(src->Name))
             {
                 dst->custom_name = GetUserString(src->Name);
@@ -822,7 +831,7 @@ namespace RCT1
             dst->status = static_cast<RideStatus>(src->Status);
 
             // Flags
-            dst->lifecycle_flags = src->LifecycleFlags;
+            dst->lifecycle_flags = SWAP_IF_BE(src->LifecycleFlags);
             // These flags were not in the base game
             if (_gameVersion == FILE_VERSION_RCT1)
             {
@@ -871,11 +880,11 @@ namespace RCT1
                     dstStation.Exit = { src->Exits[i].x, src->Exits[i].y, src->StationHeights[i] / 2, 0 };
 
                 dstStation.QueueTime = src->QueueTime[i];
-                dstStation.LastPeepInQueue = EntityId::FromUnderlying(src->LastPeepInQueue[i]);
+                dstStation.LastPeepInQueue = EntityId::FromUnderlying(SWAP_IF_BE(src->LastPeepInQueue[i]));
                 dstStation.QueueLength = src->NumPeepsInQueue[i];
 
-                dstStation.SegmentTime = src->Time[i];
-                dstStation.SegmentLength = src->Length[i];
+                dstStation.SegmentTime = SWAP_IF_BE(src->Time[i]);
+                dstStation.SegmentLength = SWAP_IF_BE(src->Length[i]);
             }
             // All other values take 0 as their default. Since they're already memset to that, no need to do it again.
             for (int32_t i = Limits::MaxStationsPerRide; i < OpenRCT2::Limits::MaxStationsPerRide; i++)
@@ -893,7 +902,7 @@ namespace RCT1
             // Vehicle links (indexes converted later)
             for (int32_t i = 0; i < Limits::MaxTrainsPerRide; i++)
             {
-                dst->vehicles[i] = EntityId::FromUnderlying(src->Vehicles[i]);
+                dst->vehicles[i] = EntityId::FromUnderlying(SWAP_IF_BE(src->Vehicles[i]));
             }
             for (int32_t i = Limits::MaxTrainsPerRide; i <= OpenRCT2::Limits::MaxTrainsPerRide; i++)
             {
@@ -907,7 +916,7 @@ namespace RCT1
             dst->proposed_num_cars_per_train = src->NumCarsPerTrain + rideEntry->zero_cars;
             dst->special_track_elements = src->SpecialTrackElements;
             dst->num_sheltered_sections = src->NumShelteredSections;
-            dst->sheltered_length = src->ShelteredLength;
+            dst->sheltered_length = SWAP_IF_BE(src->ShelteredLength);
 
             // Operation
             dst->depart_flags = src->DepartFlags;
@@ -960,6 +969,7 @@ namespace RCT1
                 dst->mode = static_cast<RideMode>(src->OperatingMode);
             }
 
+            /* TODO: Maybe see if something here needs swapping? */
             SetRideColourScheme(dst, src);
 
             // Maintenance
@@ -971,7 +981,7 @@ namespace RCT1
             dst->downtime = src->Downtime;
             dst->breakdown_reason = src->BreakdownReason;
             dst->mechanic_status = src->MechanicStatus;
-            dst->mechanic = EntityId::FromUnderlying(src->Mechanic);
+            dst->mechanic = EntityId::FromUnderlying(SWAP_IF_BE(src->Mechanic));
             dst->breakdown_reason_pending = src->BreakdownReasonPending;
             dst->inspection_station = StationIndex::FromUnderlying(src->InspectionStation);
             dst->broken_car = src->BrokenCar;
@@ -982,17 +992,17 @@ namespace RCT1
             dst->intensity = src->Intensity;
             dst->nausea = src->Nausea;
 
-            dst->max_speed = src->MaxSpeed;
-            dst->average_speed = src->AverageSpeed;
+            dst->max_speed = SWAP_IF_BE(src->MaxSpeed);
+            dst->average_speed = SWAP_IF_BE(src->AverageSpeed);
 
-            dst->max_positive_vertical_g = src->MaxPositiveVerticalG;
-            dst->max_negative_vertical_g = src->MaxNegativeVerticalG;
-            dst->max_lateral_g = src->MaxLateralG;
-            dst->previous_lateral_g = src->PreviousLateralG;
-            dst->previous_vertical_g = src->PreviousVerticalG;
-            dst->turn_count_banked = src->TurnCountBanked;
-            dst->turn_count_default = src->TurnCountDefault;
-            dst->turn_count_sloped = src->TurnCountSloped;
+            dst->max_positive_vertical_g = SWAP_IF_BE(src->MaxPositiveVerticalG);
+            dst->max_negative_vertical_g = SWAP_IF_BE(src->MaxNegativeVerticalG);
+            dst->max_lateral_g = SWAP_IF_BE(src->MaxLateralG);
+            dst->previous_lateral_g = SWAP_IF_BE(src->PreviousLateralG);
+            dst->previous_vertical_g = SWAP_IF_BE(src->PreviousVerticalG);
+            dst->turn_count_banked = SWAP_IF_BE(src->TurnCountBanked);
+            dst->turn_count_default = SWAP_IF_BE(src->TurnCountDefault);
+            dst->turn_count_sloped = SWAP_IF_BE(src->TurnCountSloped);
             dst->drops = src->NumDrops;
             dst->start_drop_height = src->StartDropHeight / 2;
             dst->highest_drop_height = src->HighestDropHeight / 2;
@@ -1019,7 +1029,7 @@ namespace RCT1
                 dst->CurTestTrackLocation = { src->CurTestTrackLocation.x, src->CurTestTrackLocation.y,
                                               src->CurTestTrackZ / 2 };
             }
-            dst->testing_flags = src->TestingFlags;
+            dst->testing_flags = SWAP_IF_BE(src->TestingFlags);
             dst->current_test_segment = src->CurrentTestSegment;
             dst->current_test_station = StationIndex::GetNull();
             dst->average_speed_test_timeout = src->AverageSpeedTestTimeout;
@@ -1027,20 +1037,20 @@ namespace RCT1
             dst->slide_peep_t_shirt_colour = RCT1::GetColour(src->SlidePeepTshirtColour);
             dst->spiral_slide_progress = src->SpiralSlideProgress;
             // Doubles as slide_peep
-            dst->maze_tiles = src->MazeTiles;
+            dst->maze_tiles = SWAP_IF_BE(src->MazeTiles);
 
             // Finance / customers
-            dst->upkeep_cost = ToMoney64(src->UpkeepCost);
-            dst->price[0] = src->Price;
-            dst->price[1] = src->PriceSecondary;
-            dst->income_per_hour = ToMoney64(src->IncomePerHour);
-            dst->total_customers = src->TotalCustomers;
-            dst->profit = ToMoney64(src->Profit);
-            dst->total_profit = ToMoney64(src->TotalProfit);
-            dst->value = ToMoney64(src->Value);
+            dst->upkeep_cost = ToMoney64(SWAP_IF_BE(src->UpkeepCost));
+            dst->price[0] = SWAP_IF_BE(src->Price);
+            dst->price[1] = SWAP_IF_BE(src->PriceSecondary);
+            dst->income_per_hour = ToMoney64(SWAP_IF_BE(src->IncomePerHour));
+            dst->total_customers = SWAP_IF_BE(src->TotalCustomers);
+            dst->profit = ToMoney64(SWAP_IF_BE(src->Profit));
+            dst->total_profit = ToMoney64(SWAP_IF_BE(src->TotalProfit));
+            dst->value = ToMoney64(SWAP_IF_BE(src->Value));
             for (size_t i = 0; i < std::size(src->NumCustomers); i++)
             {
-                dst->num_customers[i] = src->NumCustomers[i];
+                dst->num_customers[i] = SWAP_IF_BE(src->NumCustomers[i]);
             }
 
             dst->satisfaction = src->Satisfaction;
@@ -1182,9 +1192,9 @@ namespace RCT1
         void ImportRideMeasurement(RideMeasurement& dst, const RCT12RideMeasurement& src)
         {
             dst.flags = src.Flags;
-            dst.last_use_tick = src.LastUseTick;
-            dst.num_items = src.NumItems;
-            dst.current_item = src.CurrentItem;
+            dst.last_use_tick = SWAP_IF_BE(src.LastUseTick);
+            dst.num_items = SWAP_IF_BE(src.NumItems);
+            dst.current_item = SWAP_IF_BE(src.CurrentItem);
             dst.vehicle_index = src.VehicleIndex;
             dst.current_station = StationIndex::FromUnderlying(src.CurrentStation);
             for (size_t i = 0; i < std::size(src.Velocity); i++)
@@ -1370,9 +1380,9 @@ namespace RCT1
             dst->SpriteData.Width = src->SpriteWidth;
             dst->SpriteData.HeightMin = src->SpriteHeightNegative;
             dst->SpriteData.HeightMax = src->SpriteHeightPositive;
-            dst->x = src->x;
-            dst->y = src->y;
-            dst->z = src->z;
+            dst->x = SWAP_IF_BE(src->x);
+            dst->y = SWAP_IF_BE(src->y);
+            dst->z = SWAP_IF_BE(src->z);
         }
 
         void ImportPeepSpawns()
@@ -2167,15 +2177,15 @@ namespace RCT1
 
                 dst->Type = static_cast<News::ItemType>(src->Type);
                 dst->Flags = src->Flags;
-                dst->Ticks = src->Ticks;
-                dst->MonthYear = src->MonthYear;
+                dst->Ticks = SWAP_IF_BE(src->Ticks);
+                dst->MonthYear = SWAP_IF_BE(src->MonthYear);
                 dst->Day = src->Day;
                 dst->Text = ConvertFormattedStringToOpenRCT2(std::string_view(src->Text, sizeof(src->Text)));
 
                 if (dst->Type == News::ItemType::Research)
                 {
-                    uint8_t researchItem = src->Assoc & 0x000000FF;
-                    uint8_t researchType = (src->Assoc & 0x00FF0000) >> 16;
+                    uint8_t researchItem = SWAP_IF_BE(src->Assoc) & 0x000000FF;
+                    uint8_t researchType = (SWAP_IF_BE(src->Assoc) & 0x00FF0000) >> 16;
 
                     ::ResearchItem tmpResearchItem = {};
                     ConvertResearchEntry(&tmpResearchItem, researchItem, researchType);
@@ -2183,7 +2193,7 @@ namespace RCT1
                 }
                 else
                 {
-                    dst->Assoc = src->Assoc;
+                    dst->Assoc = SWAP_IF_BE(src->Assoc);
                 }
             }
 
@@ -2636,6 +2646,151 @@ namespace RCT1
 
             return RIDE_TYPE_NULL;
         }
+
+        void swaps4()
+        {
+           _s4.Month = ByteSwapBE(_s4.Month);
+           _s4.Day = ByteSwapBE(_s4.Day);
+           _s4.Ticks = ByteSwapBE(_s4.Ticks);
+           _s4.RandomA = ByteSwapBE(_s4.RandomA);
+           _s4.RandomB = ByteSwapBE(_s4.RandomB);
+
+           _s4.UnkCounter = ByteSwapBE(_s4.UnkCounter);
+           _s4.NextEntityIndex = ByteSwapBE(_s4.NextEntityIndex);
+           _s4.FirstVehicleEntityIndex = ByteSwapBE(_s4.FirstVehicleEntityIndex);
+           _s4.FirstPeepEntityIndex = ByteSwapBE(_s4.FirstPeepEntityIndex);
+           _s4.FirstDuckEntityIndex = ByteSwapBE(_s4.FirstDuckEntityIndex);
+           _s4.FirstLitterEntityIndex = ByteSwapBE(_s4.FirstLitterEntityIndex);
+           _s4.FirstOversizedRideCarEntityIndex = ByteSwapBE(_s4.FirstOversizedRideCarEntityIndex);
+           _s4.EntitiesAvailable = ByteSwapBE(_s4.EntitiesAvailable);
+           _s4.NumVehicleEntities = ByteSwapBE(_s4.NumVehicleEntities);
+           _s4.NumPeepEntities = ByteSwapBE(_s4.NumPeepEntities);
+           _s4.NumDuckEntities = ByteSwapBE(_s4.NumDuckEntities);
+           _s4.NumLitterEntities = ByteSwapBE(_s4.NumLitterEntities);
+           _s4.NumOversizedRideCarEntities = ByteSwapBE(_s4.NumOversizedRideCarEntities);
+           _s4.ParkNameStringIndex = ByteSwapBE(_s4.ParkNameStringIndex);
+           _s4.Unk198830 = ByteSwapBE(_s4.Unk198830);
+           _s4.Cash = ByteSwapBE(_s4.Cash);
+           _s4.Loan = ByteSwapBE(_s4.Loan);
+           _s4.ParkFlags = ByteSwapBE(_s4.ParkFlags);
+           _s4.ParkEntranceFee = ByteSwapBE(_s4.ParkEntranceFee);
+           _s4.ParkEntrance.x = ByteSwapBE(_s4.ParkEntrance.x);
+           _s4.ParkEntrance.y = ByteSwapBE(_s4.ParkEntrance.y);
+           _s4.ParkEntrance.z = ByteSwapBE(_s4.ParkEntrance.z);
+           _s4.Unk198858 = ByteSwapBE(_s4.Unk198858);
+
+           for (auto &rideAvail : _s4.AvailableRides) {
+               rideAvail = ByteSwapBE(rideAvail);
+           }
+
+           for (auto &vehAvail : _s4.AvailableVehicles) {
+               vehAvail = ByteSwapBE(vehAvail);
+           }
+
+           for (auto &rideFeat1 : _s4.RideFeature1) {
+               rideFeat1 = ByteSwapBE(rideFeat1);
+           }
+
+           for (auto &rideFeat2 : _s4.RideFeature2) {
+               rideFeat2 = ByteSwapBE(rideFeat2);
+           }
+
+           _s4.GuestsInPark = ByteSwapBE(_s4.GuestsInPark);
+           _s4.Unk198C9E = ByteSwapBE(_s4.Unk198C9E);
+
+           for (size_t i = 0; i < Limits::ExpenditureTableMonthCount; ++i) {
+               for (size_t j = 0; i < Limits::ExpenditureTypeCount; ++j) {
+                   _s4.Expenditure[i][j] = ByteSwapBE(_s4.Expenditure[i][j]);
+               }
+           }
+           _s4.GuestsInPark2 = ByteSwapBE(_s4.GuestsInPark2);
+           _s4.AvailableBanners = ByteSwapBE(_s4.AvailableBanners);
+           _s4.ParkRating = ByteSwapBE(_s4.ParkRating);
+           _s4.ResearchProgress = ByteSwapBE(_s4.ResearchProgress);
+           _s4.ParkSize = ByteSwapBE(_s4.ParkSize);
+           _s4.GuestGenerationProbability = ByteSwapBE(_s4.GuestGenerationProbability);
+           _s4.TotalRideValueForMoney = ByteSwapBE(_s4.TotalRideValueForMoney);
+           _s4.MaxLoan = ByteSwapBE(_s4.MaxLoan);
+           _s4.GuestInitialCash = ByteSwapBE(_s4.GuestInitialCash);
+           _s4.Unk199552 = ByteSwapBE(_s4.Unk199552);
+           _s4.ScenarioObjectiveCurrency = ByteSwapBE(_s4.ScenarioObjectiveCurrency);
+           _s4.ScenarioObjectiveNumGuests = ByteSwapBE(_s4.ScenarioObjectiveNumGuests);
+
+           for (auto &entry : _s4.CashHistory) {
+               entry = ByteSwapBE(entry);
+           }
+
+           _s4.TotalExpenditure = ByteSwapBE(_s4.TotalExpenditure);
+           _s4.Profit = ByteSwapBE(_s4.Profit);
+
+           for (auto &entry : _s4.WeeklyProfitHistory) {
+               entry = ByteSwapBE(entry);
+           }
+
+           _s4.ParkValue = ByteSwapBE(_s4.ParkValue);
+
+           for (auto &entry : _s4.ParkValueHistory) {
+               entry = ByteSwapBE(entry);
+           }
+
+           _s4.CompletedCompanyValue = ByteSwapBE(_s4.CompletedCompanyValue);
+           _s4.NumAdmissions = ByteSwapBE(_s4.NumAdmissions);
+           _s4.AdmissionTotalIncome = ByteSwapBE(_s4.AdmissionTotalIncome);
+           _s4.CompanyValue = ByteSwapBE(_s4.CompanyValue);
+
+           for (auto &entry : _s4.Awards) {
+               entry.Time = ByteSwapBE(entry.Time);
+               entry.Type = ByteSwapBE(entry.Type);
+           }
+
+           _s4.LandPrice = ByteSwapBE(_s4.LandPrice);
+           _s4.ConstructionRightsPrice = ByteSwapBE(_s4.ConstructionRightsPrice);
+           _s4.Unk199BCC = ByteSwapBE(_s4.Unk199BCC);
+           _s4.Unk199BCE = ByteSwapBE(_s4.Unk199BCE);
+           _s4.Unk199BD0 = ByteSwapBE(_s4.Unk199BD0);
+           _s4.GameVersion = ByteSwapBE(_s4.GameVersion);
+           _s4.ObjectiveCompletionCompanyValue = ByteSwapBE(_s4.ObjectiveCompletionCompanyValue);
+           _s4.FinanceChecksum = ByteSwapBE(_s4.FinanceChecksum);
+           _s4.FinanceChecksum2 = ByteSwapBE(_s4.FinanceChecksum2);
+           _s4.FinanceChecksum3 = ByteSwapBE(_s4.FinanceChecksum3);
+           _s4.NumRides = ByteSwapBE(_s4.NumRides);
+           _s4.CheatDetectionNegNumRides = ByteSwapBE(_s4.CheatDetectionNegNumRides);
+           _s4.CheatDetectionMaxOwnedTiles = ByteSwapBE(_s4.CheatDetectionMaxOwnedTiles);
+           _s4.ScenarioSlotIndexChecksum = ByteSwapBE(_s4.ScenarioSlotIndexChecksum);
+
+           for (auto &entry : _s4.CheatDetectionSV6SC4) {
+               entry = ByteSwapBE(entry);
+           }
+           _s4.Unk199C84 = ByteSwapBE(_s4.Unk199C84);
+           _s4.Unk199C86 = ByteSwapBE(_s4.Unk199C86);
+           _s4.MapSizeUnits = ByteSwapBE(_s4.MapSizeUnits);
+           _s4.MapSizeUnkB = ByteSwapBE(_s4.MapSizeUnkB);
+           _s4.MapSize = ByteSwapBE(_s4.MapSize);
+           _s4.MapSizeMaxXY = ByteSwapBE(_s4.MapSizeMaxXY);
+           _s4.SamePriceThroughout = ByteSwapBE(_s4.SamePriceThroughout);
+           _s4.Unk199C94 = ByteSwapBE(_s4.Unk199C94);
+           _s4.Unk199C9A = ByteSwapBE(_s4.Unk199C9A);
+           _s4.GameTimeCounter = ByteSwapBE(_s4.GameTimeCounter);
+           _s4.UnkGameTimeCounter = ByteSwapBE(_s4.UnkGameTimeCounter);
+           _s4.ViewX = ByteSwapBE(_s4.ViewX);
+           _s4.ViewY = ByteSwapBE(_s4.ViewY);
+
+           for (auto &entry : _s4.MapAnimations) {
+               entry.x = ByteSwapBE(entry.x);
+               entry.y = ByteSwapBE(entry.y);
+           }
+
+           _s4.NumMapAnimations = ByteSwapBE(_s4.NumMapAnimations);
+           _s4.ScrollingTextStep = ByteSwapBE(_s4.ScrollingTextStep);
+           _s4.Unk1CADCA = ByteSwapBE(_s4.Unk1CADCA);
+           _s4.Unk1CADCE = ByteSwapBE(_s4.Unk1CADCE);
+           _s4.NextGuestIndex = ByteSwapBE(_s4.NextGuestIndex);
+           _s4.GameCounter5 = ByteSwapBE(_s4.GameCounter5);
+           _s4.ClimateTimer = ByteSwapBE(_s4.ClimateTimer);
+           _s4.ScenarioSlotIndex = ByteSwapBE(_s4.ScenarioSlotIndex);
+           _s4.ScenarioFlags = ByteSwapBE(_s4.ScenarioFlags);
+           _s4.ExpansionPackChecksum = ByteSwapBE(_s4.ExpansionPackChecksum);
+        }
     };
 
     // Very similar but not the same as S6Importer version (due to peeps)
@@ -2707,7 +2862,7 @@ namespace RCT1
 
     template<> void S4Importer::ImportEntity<::Vehicle>(const RCT12EntityBase& srcBase)
     {
-        auto* dst = CreateEntityAt<::Vehicle>(EntityId::FromUnderlying(srcBase.EntityIndex));
+        auto* dst = CreateEntityAt<::Vehicle>(EntityId::FromUnderlying(SWAP_IF_BE(srcBase.EntityIndex)));
         auto* src = static_cast<const RCT1::Vehicle*>(&srcBase);
         const auto* ride = GetRide(RideId::FromUnderlying(src->Ride));
         if (ride == nullptr)
@@ -2721,8 +2876,8 @@ namespace RCT1
 
         dst->vehicle_type = vehicleEntryIndex;
         dst->SubType = ::Vehicle::Type(src->Type);
-        dst->var_44 = src->Var44;
-        dst->remaining_distance = src->RemainingDistance;
+        dst->var_44 = SWAP_IF_BE(src->Var44);
+        dst->remaining_distance = SWAP_IF_BE(src->RemainingDistance);
 
         // Properties from vehicle entry
         dst->SpriteData.Width = src->SpriteWidth;
@@ -2730,30 +2885,33 @@ namespace RCT1
         dst->SpriteData.HeightMax = src->SpriteHeightPositive;
         dst->Orientation = src->EntityDirection;
 
-        dst->SpriteData.SpriteRect = ScreenRect(src->SpriteLeft, src->SpriteTop, src->SpriteRight, src->SpriteBottom);
+        dst->SpriteData.SpriteRect = ScreenRect(SWAP_IF_BE(src->SpriteLeft),
+                                                SWAP_IF_BE(src->SpriteTop),
+                                                SWAP_IF_BE(src->SpriteRight),
+                                                SWAP_IF_BE(src->SpriteBottom));
 
-        dst->mass = src->Mass;
+        dst->mass = SWAP_IF_BE(src->Mass);
         dst->num_seats = src->NumSeats;
         dst->speed = src->Speed;
         dst->powered_acceleration = src->PoweredAcceleration;
         dst->brake_speed = src->BrakeSpeed;
 
-        dst->velocity = src->Velocity;
-        dst->acceleration = src->Acceleration;
+        dst->velocity = SWAP_IF_BE(src->Velocity);
+        dst->acceleration = SWAP_IF_BE(src->Acceleration);
         dst->SwingSprite = src->SwingSprite;
-        dst->SwingPosition = src->SwingPosition;
-        dst->SwingSpeed = src->SwingSpeed;
+        dst->SwingPosition = SWAP_IF_BE(src->SwingPosition);
+        dst->SwingSpeed = SWAP_IF_BE(src->SwingSpeed);
         dst->restraints_position = src->RestraintsPosition;
         dst->spin_sprite = src->SpinSprite;
         dst->sound_vector_factor = src->SoundVectorFactor;
         dst->spin_speed = src->SpinSpeed;
-        dst->sound2_flags = src->Sound2Flags;
+        dst->sound2_flags = SWAP_IF_BE(src->Sound2Flags);
         dst->sound1_id = OpenRCT2::Audio::SoundId::Null;
         dst->sound2_id = OpenRCT2::Audio::SoundId::Null;
-        dst->var_C0 = src->VarC0;
+        dst->var_C0 = SWAP_IF_BE(src->VarC0);
         dst->CollisionDetectionTimer = src->CollisionDetectionTimer;
         dst->animation_frame = src->AnimationFrame;
-        dst->animationState = src->AnimationState;
+        dst->animationState = SWAP_IF_BE(src->AnimationState);
         dst->NumLaps = src->NumLaps;
         dst->var_D3 = src->VarD3;
         dst->scream_sound_id = OpenRCT2::Audio::SoundId::Null;
@@ -2765,14 +2923,14 @@ namespace RCT1
         dst->seat_rotation = DEFAULT_SEAT_ROTATION;
 
         // Vehicle links (indexes converted later)
-        dst->prev_vehicle_on_ride = EntityId::FromUnderlying(src->PrevVehicleOnRide);
-        dst->next_vehicle_on_ride = EntityId::FromUnderlying(src->NextVehicleOnRide);
-        dst->next_vehicle_on_train = EntityId::FromUnderlying(src->NextVehicleOnTrain);
+        dst->prev_vehicle_on_ride = EntityId::FromUnderlying(SWAP_IF_BE(src->PrevVehicleOnRide));
+        dst->next_vehicle_on_ride = EntityId::FromUnderlying(SWAP_IF_BE(src->NextVehicleOnRide));
+        dst->next_vehicle_on_train = EntityId::FromUnderlying(SWAP_IF_BE(src->NextVehicleOnTrain));
 
         // Guests (indexes converted later)
         for (int i = 0; i < 32; i++)
         {
-            const auto spriteIndex = EntityId::FromUnderlying(src->Peep[i]);
+            const auto spriteIndex = EntityId::FromUnderlying(SWAP_IF_BE(src->Peep[i]));
             dst->peep[i] = spriteIndex;
             if (!spriteIndex.IsNull())
             {
@@ -2924,7 +3082,7 @@ namespace RCT1
 
     template<> void S4Importer::ImportEntity<Staff>(const RCT12EntityBase& srcBase)
     {
-        auto* dst = CreateEntityAt<Staff>(EntityId::FromUnderlying(srcBase.EntityIndex));
+        auto* dst = CreateEntityAt<Staff>(EntityId::FromUnderlying(SWAP_IF_BE(srcBase.EntityIndex)));
         auto* src = static_cast<const RCT1::Peep*>(&srcBase);
         ImportPeep(dst, src);
         dst->AssignedStaffType = StaffType(src->StaffType);
@@ -2942,83 +3100,83 @@ namespace RCT1
 
     template<> void S4Importer::ImportEntity<Litter>(const RCT12EntityBase& srcBase)
     {
-        auto* dst = CreateEntityAt<Litter>(EntityId::FromUnderlying(srcBase.EntityIndex));
+        auto* dst = CreateEntityAt<Litter>(EntityId::FromUnderlying(SWAP_IF_BE(srcBase.EntityIndex)));
         auto* src = static_cast<const RCT12EntityLitter*>(&srcBase);
         ImportEntityCommonProperties(dst, src);
 
         dst->SubType = Litter::Type(src->Type);
-        dst->creationTick = src->CreationTick;
+        dst->creationTick = SWAP_IF_BE(src->CreationTick);
     }
 
     template<> void S4Importer::ImportEntity<SteamParticle>(const RCT12EntityBase& srcBase)
     {
-        auto* dst = CreateEntityAt<SteamParticle>(EntityId::FromUnderlying(srcBase.EntityIndex));
+        auto* dst = CreateEntityAt<SteamParticle>(EntityId::FromUnderlying(SWAP_IF_BE(srcBase.EntityIndex)));
         auto* src = static_cast<const RCT12EntitySteamParticle*>(&srcBase);
 
         ImportEntityCommonProperties(dst, src);
-        dst->frame = src->Frame;
-        dst->time_to_move = src->TimeToMove;
+        dst->frame = SWAP_IF_BE(src->Frame);
+        dst->time_to_move = SWAP_IF_BE(src->TimeToMove);
     }
 
     template<> void S4Importer::ImportEntity<MoneyEffect>(const RCT12EntityBase& srcBase)
     {
-        auto* dst = CreateEntityAt<MoneyEffect>(EntityId::FromUnderlying(srcBase.EntityIndex));
+        auto* dst = CreateEntityAt<MoneyEffect>(EntityId::FromUnderlying(SWAP_IF_BE(srcBase.EntityIndex)));
         auto* src = static_cast<const RCT12EntityMoneyEffect*>(&srcBase);
 
         ImportEntityCommonProperties(dst, src);
-        dst->MoveDelay = src->MoveDelay;
+        dst->MoveDelay = SWAP_IF_BE(src->MoveDelay);
         dst->NumMovements = src->NumMovements;
         dst->GuestPurchase = src->Vertical;
-        dst->Value = src->Value;
-        dst->OffsetX = src->OffsetX;
-        dst->Wiggle = src->Wiggle;
+        dst->Value = SWAP_IF_BE(src->Value);
+        dst->OffsetX = SWAP_IF_BE(src->OffsetX);
+        dst->Wiggle = SWAP_IF_BE(src->Wiggle);
     }
 
     template<> void S4Importer::ImportEntity<VehicleCrashParticle>(const RCT12EntityBase& srcBase)
     {
-        auto* dst = CreateEntityAt<VehicleCrashParticle>(EntityId::FromUnderlying(srcBase.EntityIndex));
+        auto* dst = CreateEntityAt<VehicleCrashParticle>(EntityId::FromUnderlying(SWAP_IF_BE(srcBase.EntityIndex)));
         auto* src = static_cast<const RCT12EntityCrashedVehicleParticle*>(&srcBase);
         ImportEntityCommonProperties(dst, src);
-        dst->frame = src->Frame;
-        dst->time_to_live = src->TimeToLive;
+        dst->frame = SWAP_IF_BE(src->Frame);
+        dst->time_to_live = SWAP_IF_BE(src->TimeToLive);
         dst->colour[0] = RCT1::GetColour(src->Colour[0]);
         dst->colour[1] = RCT1::GetColour(src->Colour[1]);
-        dst->crashed_sprite_base = src->CrashedEntityBase;
-        dst->velocity_x = src->VelocityX;
-        dst->velocity_y = src->VelocityY;
-        dst->velocity_z = src->VelocityZ;
-        dst->acceleration_x = src->AccelerationX;
-        dst->acceleration_y = src->AccelerationY;
-        dst->acceleration_z = src->AccelerationZ;
+        dst->crashed_sprite_base = SWAP_IF_BE(src->CrashedEntityBase);
+        dst->velocity_x = SWAP_IF_BE(src->VelocityX);
+        dst->velocity_y = SWAP_IF_BE(src->VelocityY);
+        dst->velocity_z = SWAP_IF_BE(src->VelocityZ);
+        dst->acceleration_x = SWAP_IF_BE(src->AccelerationX);
+        dst->acceleration_y = SWAP_IF_BE(src->AccelerationY);
+        dst->acceleration_z = SWAP_IF_BE(src->AccelerationZ);
     }
 
     template<> void S4Importer::ImportEntity<ExplosionCloud>(const RCT12EntityBase& srcBase)
     {
-        auto* dst = CreateEntityAt<ExplosionCloud>(EntityId::FromUnderlying(srcBase.EntityIndex));
+        auto* dst = CreateEntityAt<ExplosionCloud>(EntityId::FromUnderlying(SWAP_IF_BE(srcBase.EntityIndex)));
         auto* src = static_cast<const RCT12EntityParticle*>(&srcBase);
         ImportEntityCommonProperties(dst, src);
-        dst->frame = src->Frame;
+        dst->frame = SWAP_IF_BE(src->Frame);
     }
 
     template<> void S4Importer::ImportEntity<ExplosionFlare>(const RCT12EntityBase& srcBase)
     {
-        auto* dst = CreateEntityAt<ExplosionFlare>(EntityId::FromUnderlying(srcBase.EntityIndex));
+        auto* dst = CreateEntityAt<ExplosionFlare>(EntityId::FromUnderlying(SWAP_IF_BE(srcBase.EntityIndex)));
         auto* src = static_cast<const RCT12EntityParticle*>(&srcBase);
         ImportEntityCommonProperties(dst, src);
-        dst->frame = src->Frame;
+        dst->frame = SWAP_IF_BE(src->Frame);
     }
 
     template<> void S4Importer::ImportEntity<CrashSplashParticle>(const RCT12EntityBase& srcBase)
     {
-        auto* dst = CreateEntityAt<CrashSplashParticle>(EntityId::FromUnderlying(srcBase.EntityIndex));
+        auto* dst = CreateEntityAt<CrashSplashParticle>(EntityId::FromUnderlying(SWAP_IF_BE(srcBase.EntityIndex)));
         auto* src = static_cast<const RCT12EntityParticle*>(&srcBase);
         ImportEntityCommonProperties(dst, src);
-        dst->frame = src->Frame;
+        dst->frame = SWAP_IF_BE(src->Frame);
     }
 
     template<> void S4Importer::ImportEntity<JumpingFountain>(const RCT12EntityBase& srcBase)
     {
-        auto* dst = CreateEntityAt<JumpingFountain>(EntityId::FromUnderlying(srcBase.EntityIndex));
+        auto* dst = CreateEntityAt<JumpingFountain>(EntityId::FromUnderlying(SWAP_IF_BE(srcBase.EntityIndex)));
         auto* src = static_cast<const RCT12EntityJumpingFountain*>(&srcBase);
 
         auto fountainType = JumpingFountainType::Water;
@@ -3026,24 +3184,24 @@ namespace RCT1
             fountainType = JumpingFountainType::Snow;
 
         ImportEntityCommonProperties(dst, src);
-        dst->frame = src->Frame;
+        dst->frame = SWAP_IF_BE(src->Frame);
         dst->FountainType = fountainType;
         dst->NumTicksAlive = src->NumTicksAlive;
         dst->FountainFlags = src->FountainFlags;
-        dst->TargetX = src->TargetX;
-        dst->TargetY = src->TargetY;
-        dst->Iteration = src->Iteration;
+        dst->TargetX = SWAP_IF_BE(src->TargetX);
+        dst->TargetY = SWAP_IF_BE(src->TargetY);
+        dst->Iteration = SWAP_IF_BE(src->Iteration);
     }
 
     template<> void S4Importer::ImportEntity<Balloon>(const RCT12EntityBase& srcBase)
     {
-        auto* dst = CreateEntityAt<Balloon>(EntityId::FromUnderlying(srcBase.EntityIndex));
+        auto* dst = CreateEntityAt<Balloon>(EntityId::FromUnderlying(SWAP_IF_BE(srcBase.EntityIndex)));
         auto* src = static_cast<const RCT12EntityBalloon*>(&srcBase);
 
         ImportEntityCommonProperties(dst, src);
-        dst->frame = src->Frame;
-        dst->popped = src->Popped;
-        dst->time_to_move = src->TimeToMove;
+        dst->frame = SWAP_IF_BE(src->Frame);
+        dst->popped = SWAP_IF_BE(src->Popped);
+        dst->time_to_move = SWAP_IF_BE(src->TimeToMove);
         // Balloons were always blue in RCT1 without AA/LL
         if (_gameVersion == FILE_VERSION_RCT1)
         {
@@ -3057,13 +3215,13 @@ namespace RCT1
 
     template<> void S4Importer::ImportEntity<Duck>(const RCT12EntityBase& srcBase)
     {
-        auto* dst = CreateEntityAt<Duck>(EntityId::FromUnderlying(srcBase.EntityIndex));
+        auto* dst = CreateEntityAt<Duck>(EntityId::FromUnderlying(SWAP_IF_BE(srcBase.EntityIndex)));
         auto* src = static_cast<const RCT12EntityDuck*>(&srcBase);
 
         ImportEntityCommonProperties(dst, src);
-        dst->frame = src->Frame;
-        dst->target_x = src->TargetX;
-        dst->target_y = src->TargetY;
+        dst->frame = SWAP_IF_BE(src->Frame);
+        dst->target_x = SWAP_IF_BE(src->TargetX);
+        dst->target_y = SWAP_IF_BE(src->TargetY);
         dst->state = static_cast<Duck::DuckState>(src->State);
     }
 
@@ -3115,6 +3273,7 @@ namespace RCT1
                 break;
         }
     }
+
 } // namespace RCT1
 
 std::unique_ptr<IParkImporter> ParkImporter::CreateS4()

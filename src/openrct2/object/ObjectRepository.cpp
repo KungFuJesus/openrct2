@@ -344,6 +344,8 @@ public:
 
         // Check if we already have this object
         RCTObjectEntry entry = stream->ReadValue<RCTObjectEntry>();
+        entry.flags = SWAP_IF_BE(entry.flags);
+        entry.checksum = SWAP_IF_BE(entry.checksum);
         if (FindObject(&entry) != nullptr)
         {
             chunkReader.SkipChunk();
@@ -535,7 +537,16 @@ private:
         try
         {
             auto fs = FileStream(std::string(path), FILE_MODE_WRITE);
+
+            /* Write out "entry" as little endian for the checksum and flags */
+#if RCT2_ENDIANNESS == __ORDER_BIG_ENDIAN__ 
+            RCTObjectEntry entryLE = *entry;
+            entryLE.checksum = ByteSwapBE(entry->checksum);
+            entryLE.flags = ByteSwapBE(entry->flags);
+            fs.Write(&entryLE, sizeof(RCTObjectEntry));
+#else
             fs.Write(entry, sizeof(RCTObjectEntry));
+#endif
             fs.Write(encodedDataBuffer, encodedDataSize);
 
             Memory::Free(encodedDataBuffer);

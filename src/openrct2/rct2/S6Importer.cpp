@@ -81,6 +81,106 @@ namespace RCT2
 {
 #define DECRYPT_MONEY(money) (static_cast<money32>(Numerics::rol32((money) ^ 0xF4EC9621, 13)))
 
+    void swapS6Hdr(S6Header &hdr)
+    {
+        hdr.NumPackedObjects = ByteSwapBE(hdr.NumPackedObjects); 
+        hdr.Version = ByteSwapBE(hdr.Version);
+        hdr.MagicNumber = ByteSwapBE(hdr.MagicNumber);
+    }
+
+    void swapS6Info(S6Info &info)
+    {
+        info.ObjectiveArg2 = ByteSwapBE(info.ObjectiveArg2);
+        info.ObjectiveArg3 = ByteSwapBE(info.ObjectiveArg3);
+    }
+
+    void swapS6(S6Data &s6)
+    {
+
+        s6.ElapsedMonths = ByteSwapBE(s6.ElapsedMonths);
+        s6.CurrentDay = ByteSwapBE(s6.CurrentDay);
+        s6.ScenarioTicks = ByteSwapBE(s6.ScenarioTicks);
+        s6.ScenarioSrand0 = ByteSwapBE(s6.ScenarioSrand0);
+        s6.ScenarioSrand1 = ByteSwapBE(s6.ScenarioSrand1);
+        s6.NextFreeTileElementPointerIndex = ByteSwapBE(s6.NextFreeTileElementPointerIndex);
+        s6.ParkNameArgs = ByteSwapBE(s6.ParkNameArgs);
+        s6.InitialCash = ByteSwapBE(s6.InitialCash);
+        s6.CurrentLoan = ByteSwapBE(s6.CurrentLoan);
+        s6.ParkFlags = ByteSwapBE(s6.ParkFlags);
+        s6.ParkEntranceFee = ByteSwapBE(s6.ParkEntranceFee);
+        s6.RCT1ParkEntranceX = ByteSwapBE(s6.RCT1ParkEntranceX);
+        s6.RCT1ParkEntranceY = ByteSwapBE(s6.RCT1ParkEntranceY);
+
+        for (size_t i = 0; i < 128; ++i) {
+            s6.ResearchedTrackTypesA[i] = ByteSwapBE(s6.ResearchedTrackTypesA[i]);
+            s6.ResearchedTrackTypesB[i] = ByteSwapBE(s6.ResearchedTrackTypesB[i]);
+        }
+
+        /* TODO: Maybe not necessary? */
+        for (size_t i = 0; i < Limits::MaxResearchedRideTypeQuads; ++i) {
+            s6.ResearchedRideTypes[i] = ByteSwapBE(s6.ResearchedRideTypes[i]);
+        }
+        for (size_t i = 0; i < Limits::MaxResearchedRideEntryQuads; ++i) {
+            s6.ResearchedRideEntries[i] = ByteSwapBE(s6.ResearchedRideEntries[i]);
+        }
+
+        s6.GuestsInPark = ByteSwapBE(s6.GuestsInPark);
+        s6.GuestsHeadingForPark = ByteSwapBE(s6.GuestsHeadingForPark);
+        s6.LastGuestsInPark = ByteSwapBE(s6.LastGuestsInPark);
+        s6.ParkRating = ByteSwapBE(s6.ParkRating);
+        s6.LastResearchedItemSubject = ByteSwapBE(s6.LastResearchedItemSubject);
+        s6.NextResearchItem = ByteSwapBE(s6.NextResearchItem);
+        s6.ResearchProgress = ByteSwapBE(s6.ResearchProgress);
+        s6.ParkSize = ByteSwapBE(s6.ParkSize);
+        s6.GuestGenerationProbability = ByteSwapBE(s6.GuestGenerationProbability);
+        s6.TotalRideValueForMoney = ByteSwapBE(s6.TotalRideValueForMoney);
+        s6.MaximumLoan = ByteSwapBE(s6.MaximumLoan);
+        s6.GuestInitialCash = ByteSwapBE(s6.GuestInitialCash);
+        s6.ObjectiveCurrency = ByteSwapBE(s6.ObjectiveCurrency);
+        s6.ObjectiveGuests = ByteSwapBE(s6.ObjectiveGuests);
+        s6.CurrentExpenditure = ByteSwapBE(s6.CurrentExpenditure);
+        s6.CurrentProfit = ByteSwapBE(s6.CurrentProfit);
+        s6.WeeklyProfitAverageDividend = ByteSwapBE(s6.WeeklyProfitAverageDividend);
+        s6.WeeklyProfitAverageDivisor = ByteSwapBE(s6.WeeklyProfitAverageDivisor);
+        s6.ParkValue = ByteSwapBE(s6.ParkValue);
+        s6.CompletedCompanyValue = ByteSwapBE(s6.CompletedCompanyValue);
+        s6.TotalAdmissions = ByteSwapBE(s6.TotalAdmissions);
+        s6.IncomeFromAdmissions = ByteSwapBE(s6.IncomeFromAdmissions);
+        s6.CompanyValue = ByteSwapBE(s6.CompanyValue);
+        s6.LandPrice = ByteSwapBE(s6.LandPrice);
+        s6.ConstructionRightsPrice = ByteSwapBE(s6.ConstructionRightsPrice);
+        s6.Word01358774 = ByteSwapBE(s6.Word01358774);
+        s6.CDKey = ByteSwapBE(s6.CDKey);
+        s6.GameVersionNumber = ByteSwapBE(s6.GameVersionNumber);
+        s6.CompletedCompanyValueRecord = ByteSwapBE(s6.CompletedCompanyValueRecord);
+        s6.LoanHash = ByteSwapBE(s6.LoanHash);
+        s6.RideCount = ByteSwapBE(s6.RideCount);
+        s6.HistoricalProfit = ByteSwapBE(s6.HistoricalProfit);
+        s6.Cash = ByteSwapBE(s6.Cash);
+        s6.ParkRatingCasualtyPenalty = ByteSwapBE(s6.ParkRatingCasualtyPenalty);
+        s6.MapSizeUnits = ByteSwapBE(s6.MapSizeUnits);
+        s6.MapSizeMinus2 = ByteSwapBE(s6.MapSizeMinus2);
+        s6.MapSize = ByteSwapBE(s6.MapSize);
+        s6.MapMaxXy = ByteSwapBE(s6.MapMaxXy);
+        s6.SamePriceThroughout = ByteSwapBE(s6.SamePriceThroughout);
+        s6.SuggestedMaxGuests = ByteSwapBE(s6.SuggestedMaxGuests);
+        s6.ParkRatingWarningDays = ByteSwapBE(s6.ParkRatingWarningDays);
+        s6.MapBaseZ = ByteSwapBE(s6.MapBaseZ);
+        s6.SamePriceThroughoutExtended = ByteSwapBE(s6.SamePriceThroughoutExtended);
+        s6.GameTicks1 = ByteSwapBE(s6.GameTicks1);
+        s6.SavedAge = ByteSwapBE(s6.SavedAge);
+        s6.SavedViewX = ByteSwapBE(s6.SavedViewX);
+        s6.SavedViewY = ByteSwapBE(s6.SavedViewY);
+        s6.NumMapAnimations = ByteSwapBE(s6.NumMapAnimations);
+        s6.NextGuestIndex = ByteSwapBE(s6.NextGuestIndex);
+        s6.GrassAndSceneryTilepos = ByteSwapBE(s6.GrassAndSceneryTilepos);
+        s6.ClimateUpdateTimer = ByteSwapBE(s6.ClimateUpdateTimer);
+        s6.RCT1ScenarioSlotIndex = ByteSwapBE(s6.RCT1ScenarioSlotIndex);
+        s6.RCT1ScenarioFlags = ByteSwapBE(s6.RCT1ScenarioFlags);
+        s6.WidePathTileLoopX = ByteSwapBE(s6.WidePathTileLoopX);
+        s6.WidePathTileLoopY = ByteSwapBE(s6.WidePathTileLoopY);
+    }
+
     /**
      * Class to import RollerCoaster Tycoon 2 scenarios (*.SC6) and saved games (*.SV6).
      */
@@ -144,6 +244,9 @@ namespace RCT2
         {
             auto chunkReader = SawyerChunkReader(stream);
             chunkReader.ReadChunk(&_s6.Header, sizeof(_s6.Header));
+#if RCT2_ENDIANNESS == __ORDER_BIG_ENDIAN__
+            swapS6Hdr(_s6.Header);
+#endif
 
             LOG_VERBOSE("saved game classic_flag = 0x%02x", _s6.Header.ClassicFlag);
             if (isScenario)
@@ -153,6 +256,9 @@ namespace RCT2
                     throw std::runtime_error("Park is not a scenario.");
                 }
                 chunkReader.ReadChunk(&_s6.Info, sizeof(_s6.Info));
+#if RCT2_ENDIANNESS == __ORDER_BIG_ENDIAN__
+            swapS6Info(_s6.Info);
+#endif
             }
             else
             {
@@ -193,12 +299,14 @@ namespace RCT2
             else
             {
                 chunkReader.ReadChunk(&_s6.ElapsedMonths, 16);
-                chunkReader.ReadChunk(&_s6.TileElements, sizeof(_s6.TileElements));
                 ReadChunk6(chunkReader, 488816);
             }
 
             _isScenario = isScenario;
             _s6Path = path;
+#if RCT2_ENDIANNESS == __ORDER_BIG_ENDIAN__
+            swapS6(_s6);
+#endif
 
             return ParkLoadResult(GetRequiredObjects());
         }
@@ -217,6 +325,14 @@ namespace RCT2
             stream.Read(&_s6.NextFreeTileElementPointerIndex, preEntitiesSize);
             stream.Read(&_s6.Entities, entitiesSize);
             stream.Read(&_s6.EntityListsHead, postEntitiesSize);
+
+            /* The entities themselves require parsing their types to know which
+             * bytes to swap */
+            for (size_t i = 0 ; i < (size_t)EntityListId::Count; ++i) {
+                _s6.EntityListsHead[i] = SWAP_IF_BE(_s6.EntityListsHead[i]);
+                _s6.EntityListsCount[i] = SWAP_IF_BE(_s6.EntityListsCount[i]);
+            }
+
         }
 
         bool GetDetails(ScenarioIndexEntry* dst) override
@@ -362,9 +478,9 @@ namespace RCT2
 
             for (size_t i = 0; i < Limits::FinanceGraphSize; i++)
             {
-                gCashHistory[i] = ToMoney64(_s6.BalanceHistory[i]);
-                gWeeklyProfitHistory[i] = ToMoney64(_s6.WeeklyProfitHistory[i]);
-                gParkValueHistory[i] = ToMoney64(_s6.ParkValueHistory[i]);
+                gCashHistory[i] = ToMoney64(SWAP_IF_BE(_s6.BalanceHistory[i]));
+                gWeeklyProfitHistory[i] = ToMoney64(SWAP_IF_BE(_s6.WeeklyProfitHistory[i]));
+                gParkValueHistory[i] = ToMoney64(SWAP_IF_BE(_s6.ParkValueHistory[i]));
             }
 
             gScenarioCompletedCompanyValue = RCT12CompletedCompanyValueToOpenRCT2(_s6.CompletedCompanyValue);
@@ -379,7 +495,7 @@ namespace RCT2
             {
                 if (src.Time != 0)
                 {
-                    awards.push_back(Award{ src.Time, static_cast<AwardType>(src.Type) });
+                    awards.push_back(Award{ SWAP_IF_BE(src.Time), static_cast<AwardType>(SWAP_IF_BE(src.Type)) });
                 }
             }
 
@@ -416,9 +532,9 @@ namespace RCT2
                 if (_s6.ParkEntranceX[i] != LOCATION_NULL)
                 {
                     CoordsXYZD entrance;
-                    entrance.x = _s6.ParkEntranceX[i];
-                    entrance.y = _s6.ParkEntranceY[i];
-                    entrance.z = _s6.ParkEntranceZ[i];
+                    entrance.x = SWAP_IF_BE(_s6.ParkEntranceX[i]);
+                    entrance.y = SWAP_IF_BE(_s6.ParkEntranceY[i]);
+                    entrance.z = SWAP_IF_BE(_s6.ParkEntranceZ[i]);
                     entrance.direction = _s6.ParkEntranceDirection[i];
                     gParkEntrances.push_back(entrance);
                 }
@@ -475,9 +591,9 @@ namespace RCT2
                 {
                     dst->Type = static_cast<News::ItemType>(src->Type);
                     dst->Flags = src->Flags;
-                    dst->Assoc = src->Assoc;
-                    dst->Ticks = src->Ticks;
-                    dst->MonthYear = src->MonthYear;
+                    dst->Assoc = SWAP_IF_BE(src->Assoc);
+                    dst->Ticks = SWAP_IF_BE(src->Ticks);
+                    dst->MonthYear = SWAP_IF_BE(src->MonthYear);
                     dst->Day = src->Day;
                     dst->Text = ConvertFormattedStringToOpenRCT2(std::string_view(src->Text, sizeof(src->Text)));
                 }
@@ -817,14 +933,14 @@ namespace RCT2
             // Pad046;
             dst->status = static_cast<RideStatus>(src->Status);
 
-            dst->default_name_number = src->NameArgumentsNumber;
+            dst->default_name_number = SWAP_IF_BE(src->NameArgumentsNumber);
             if (IsUserStringID(src->Name))
             {
                 dst->custom_name = GetUserString(src->Name);
             }
             else
             {
-                dst->default_name_number = src->NameArgumentsNumber;
+                dst->default_name_number = SWAP_IF_BE(src->NameArgumentsNumber);
             }
 
             if (src->OverallView.IsNull())
@@ -867,14 +983,14 @@ namespace RCT2
                 else
                     destStation.Exit = { src->Exits[i].x, src->Exits[i].y, src->StationHeights[i], 0 };
 
-                destStation.LastPeepInQueue = EntityId::FromUnderlying(src->LastPeepInQueue[i]);
+                destStation.LastPeepInQueue = EntityId::FromUnderlying(SWAP_IF_BE(src->LastPeepInQueue[i]));
 
-                destStation.SegmentLength = src->Length[i];
-                destStation.SegmentTime = src->Time[i];
+                destStation.SegmentLength = SWAP_IF_BE(src->Length[i]);
+                destStation.SegmentTime = SWAP_IF_BE(src->Time[i]);
 
                 destStation.QueueTime = src->QueueTime[i];
 
-                destStation.QueueLength = src->QueueLength[i];
+                destStation.QueueLength = SWAP_IF_BE(src->QueueLength[i]);
             }
             // All other values take 0 as their default. Since they're already memset to that, no need to do it again.
             for (int32_t i = Limits::MaxStationsPerRide; i < OpenRCT2::Limits::MaxStationsPerRide; i++)
@@ -891,7 +1007,7 @@ namespace RCT2
 
             for (int32_t i = 0; i < Limits::MaxTrainsPerRide; i++)
             {
-                dst->vehicles[i] = EntityId::FromUnderlying(src->Vehicles[i]);
+                dst->vehicles[i] = EntityId::FromUnderlying(SWAP_IF_BE(src->Vehicles[i]));
             }
             for (int32_t i = Limits::MaxTrainsPerRide - 1; i <= OpenRCT2::Limits::MaxTrainsPerRide; i++)
             {
@@ -920,19 +1036,19 @@ namespace RCT2
             dst->special_track_elements = src->SpecialTrackElements;
             // Pad0D6[2];
 
-            dst->max_speed = src->MaxSpeed;
-            dst->average_speed = src->AverageSpeed;
+            dst->max_speed = SWAP_IF_BE(src->MaxSpeed);
+            dst->average_speed = SWAP_IF_BE(src->AverageSpeed);
             dst->current_test_segment = src->CurrentTestSegment;
             dst->average_speed_test_timeout = src->AverageSpeedTestTimeout;
             // Pad0E2[0x2];
 
-            dst->max_positive_vertical_g = src->MaxPositiveVerticalG;
-            dst->max_negative_vertical_g = src->MaxNegativeVerticalG;
-            dst->max_lateral_g = src->MaxLateralG;
-            dst->previous_vertical_g = src->PreviousVerticalG;
-            dst->previous_lateral_g = src->PreviousLateralG;
+            dst->max_positive_vertical_g = SWAP_IF_BE(src->MaxPositiveVerticalG);
+            dst->max_negative_vertical_g = SWAP_IF_BE(src->MaxNegativeVerticalG);
+            dst->max_lateral_g = SWAP_IF_BE(src->MaxLateralG);
+            dst->previous_vertical_g = SWAP_IF_BE(src->PreviousVerticalG);
+            dst->previous_lateral_g = SWAP_IF_BE(src->PreviousLateralG);
             // Pad106[0x2];
-            dst->testing_flags = src->TestingFlags;
+            dst->testing_flags = SWAP_IF_BE(src->TestingFlags);
 
             if (src->CurTestTrackLocation.IsNull())
             {
@@ -943,9 +1059,9 @@ namespace RCT2
                 dst->CurTestTrackLocation = { src->CurTestTrackLocation.x, src->CurTestTrackLocation.y, src->CurTestTrackZ };
             }
 
-            dst->turn_count_default = src->TurnCountDefault;
-            dst->turn_count_banked = src->TurnCountBanked;
-            dst->turn_count_sloped = src->TurnCountSloped;
+            dst->turn_count_default = SWAP_IF_BE(src->TurnCountDefault);
+            dst->turn_count_banked = SWAP_IF_BE(src->TurnCountBanked);
+            dst->turn_count_sloped = SWAP_IF_BE(src->TurnCountSloped);
             if (dst->type == RIDE_TYPE_MINI_GOLF)
                 dst->holes = src->Inversions & 0x1F;
             else
@@ -954,19 +1070,19 @@ namespace RCT2
             dst->drops = src->Drops;
             dst->start_drop_height = src->StartDropHeight;
             dst->highest_drop_height = src->HighestDropHeight;
-            dst->sheltered_length = src->ShelteredLength;
-            dst->var_11C = src->Var11C;
+            dst->sheltered_length = SWAP_IF_BE(src->ShelteredLength);
+            dst->var_11C = SWAP_IF_BE(src->Var11C);
             dst->num_sheltered_sections = src->NumShelteredSections;
 
-            dst->cur_num_customers = src->CurNumCustomers;
+            dst->cur_num_customers = SWAP_IF_BE(src->CurNumCustomers);
             dst->num_customers_timeout = src->NumCustomersTimeout;
 
             for (uint8_t i = 0; i < Limits::CustomerHistorySize; i++)
             {
-                dst->num_customers[i] = src->NumCustomers[i];
+                dst->num_customers[i] = SWAP_IF_BE(src->NumCustomers[i]);
             }
 
-            dst->price[0] = src->Price;
+            dst->price[0] = SWAP_IF_BE(src->Price);
 
             for (uint8_t i = 0; i < 2; i++)
             {
@@ -975,9 +1091,14 @@ namespace RCT2
             }
 
             dst->ratings = src->Ratings;
-            dst->value = ToMoney64(src->Value);
 
-            dst->chairlift_bullwheel_rotation = src->ChairliftBullwheelRotation;
+            dst->ratings.Excitement = SWAP_IF_BE(dst->ratings.Excitement);
+            dst->ratings.Intensity = SWAP_IF_BE(dst->ratings.Intensity);
+            dst->ratings.Nausea = SWAP_IF_BE(dst->ratings.Nausea);
+
+            dst->value = ToMoney64(SWAP_IF_BE(src->Value));
+
+            dst->chairlift_bullwheel_rotation = SWAP_IF_BE(src->ChairliftBullwheelRotation);
 
             dst->satisfaction = src->Satisfaction;
             dst->satisfaction_time_out = src->SatisfactionTimeOut;
@@ -986,8 +1107,8 @@ namespace RCT2
             dst->window_invalidate_flags = src->WindowInvalidateFlags;
             // Pad14E[0x02];
 
-            dst->total_customers = src->TotalCustomers;
-            dst->total_profit = ToMoney64(src->TotalProfit);
+            dst->total_customers = SWAP_IF_BE(src->TotalCustomers);
+            dst->total_profit = ToMoney64(SWAP_IF_BE(src->TotalProfit));
             dst->popularity = src->Popularity;
             dst->popularity_time_out = src->PopularityTimeOut;
             dst->popularity_next = src->PopularityNext;
@@ -997,27 +1118,27 @@ namespace RCT2
             dst->music_tune_id = src->MusicTuneId;
             dst->slide_in_use = src->SlideInUse;
             // Includes maze_tiles
-            dst->slide_peep = EntityId::FromUnderlying(src->SlidePeep);
+            dst->slide_peep = EntityId::FromUnderlying(SWAP_IF_BE(src->SlidePeep));
             // Pad160[0xE];
             dst->slide_peep_t_shirt_colour = src->SlidePeepTShirtColour;
             // Pad16F[0x7];
             dst->spiral_slide_progress = src->SpiralSlideProgress;
             // Pad177[0x9];
-            dst->build_date = static_cast<int32_t>(src->BuildDate);
-            dst->upkeep_cost = ToMoney64(src->UpkeepCost);
-            dst->race_winner = EntityId::FromUnderlying(src->RaceWinner);
+            dst->build_date = static_cast<int32_t>(SWAP_IF_BE(src->BuildDate));
+            dst->upkeep_cost = ToMoney64(SWAP_IF_BE(src->UpkeepCost));
+            dst->race_winner = EntityId::FromUnderlying(SWAP_IF_BE(src->RaceWinner));
             // Pad186[0x02];
-            dst->music_position = src->MusicPosition;
+            dst->music_position = SWAP_IF_BE(src->MusicPosition);
 
             dst->breakdown_reason_pending = src->BreakdownReasonPending;
             dst->mechanic_status = src->MechanicStatus;
-            dst->mechanic = EntityId::FromUnderlying(src->Mechanic);
+            dst->mechanic = EntityId::FromUnderlying(SWAP_IF_BE(src->Mechanic));
             dst->inspection_station = StationIndex::FromUnderlying(src->InspectionStation);
             dst->broken_vehicle = src->BrokenVehicle;
             dst->broken_car = src->BrokenCar;
             dst->breakdown_reason = src->BreakdownReason;
 
-            dst->price[1] = src->PriceSecondary;
+            dst->price[1] = SWAP_IF_BE(src->PriceSecondary);
 
             dst->reliability = src->Reliability;
             dst->unreliability_factor = src->UnreliabilityFactor;
@@ -1030,16 +1151,16 @@ namespace RCT2
                 dst->downtime_history[i] = src->DowntimeHistory[i];
             }
 
-            dst->no_primary_items_sold = src->NoPrimaryItemsSold;
-            dst->no_secondary_items_sold = src->NoSecondaryItemsSold;
+            dst->no_primary_items_sold = SWAP_IF_BE(src->NoPrimaryItemsSold);
+            dst->no_secondary_items_sold = SWAP_IF_BE(src->NoSecondaryItemsSold);
 
             dst->breakdown_sound_modifier = src->BreakdownSoundModifier;
             dst->not_fixed_timeout = src->NotFixedTimeout;
             dst->last_crash_type = src->LastCrashType;
             dst->connected_message_throttle = src->ConnectedMessageThrottle;
 
-            dst->income_per_hour = ToMoney64(src->IncomePerHour);
-            dst->profit = ToMoney64(src->Profit);
+            dst->income_per_hour = ToMoney64(SWAP_IF_BE(src->IncomePerHour));
+            dst->profit = ToMoney64(SWAP_IF_BE(src->Profit));
 
             for (uint8_t i = 0; i < Limits::NumColourSchemes; i++)
             {
@@ -1072,23 +1193,25 @@ namespace RCT2
             }
             dst->entrance_style = entranceStyle;
 
-            dst->vehicle_change_timeout = src->VehicleChangeTimeout;
+            dst->vehicle_change_timeout = SWAP_IF_BE(src->VehicleChangeTimeout);
             dst->num_block_brakes = src->NumBlockBrakes;
             dst->lift_hill_speed = src->LiftHillSpeed;
-            dst->guests_favourite = src->GuestsFavourite;
-            dst->lifecycle_flags = src->LifecycleFlags;
+            dst->guests_favourite = SWAP_IF_BE(src->GuestsFavourite);
+            dst->lifecycle_flags = SWAP_IF_BE(src->LifecycleFlags);
 
             for (uint8_t i = 0; i < Limits::MaxTrainsPerRide; i++)
             {
                 dst->vehicle_colours[i].Tertiary = src->VehicleColoursExtended[i];
             }
 
-            dst->total_air_time = src->TotalAirTime;
+            dst->total_air_time = SWAP_IF_BE(src->TotalAirTime);
             dst->current_test_station = StationIndex::FromUnderlying(src->CurrentTestStation);
             dst->num_circuits = src->NumCircuits;
-            dst->CableLiftLoc = { src->CableLiftX, src->CableLiftY, src->CableLiftZ * COORDS_Z_STEP };
+            dst->CableLiftLoc = { SWAP_IF_BE(src->CableLiftX),
+                                  SWAP_IF_BE(src->CableLiftY),
+                                  SWAP_IF_BE(src->CableLiftZ) * COORDS_Z_STEP };
             // Pad1FD;
-            dst->cable_lift = EntityId::FromUnderlying(src->CableLift);
+            dst->cable_lift = EntityId::FromUnderlying(SWAP_IF_BE(src->CableLift));
 
             // Pad208[0x58];
         }
@@ -1101,8 +1224,12 @@ namespace RCT2
             auto& rideRatingStates = RideRatingGetUpdateStates();
             auto& dst = rideRatingStates[0];
             dst = {};
-            dst.Proximity = { src.ProximityX, src.ProximityY, src.ProximityZ };
-            dst.ProximityStart = { src.ProximityStartX, src.ProximityStartY, src.ProximityStartZ };
+            dst.Proximity = { SWAP_IF_BE(src.ProximityX),
+                              SWAP_IF_BE(src.ProximityY),
+                              SWAP_IF_BE(src.ProximityZ) };
+            dst.ProximityStart = { SWAP_IF_BE(src.ProximityStartX),
+                                   SWAP_IF_BE(src.ProximityStartY),
+                                   SWAP_IF_BE(src.ProximityStartZ) };
             dst.CurrentRide = RCT12RideIdToOpenRCT2RideId(src.CurrentRide);
             dst.State = src.State;
             if (src.CurrentRide < Limits::MaxRidesInPark && _s6.Rides[src.CurrentRide].Type < std::size(RideTypeDescriptors))
@@ -1111,14 +1238,14 @@ namespace RCT2
             else
                 dst.ProximityTrackType = 0xFF;
             dst.ProximityBaseHeight = src.ProximityBaseHeight;
-            dst.ProximityTotal = src.ProximityTotal;
+            dst.ProximityTotal = SWAP_IF_BE(src.ProximityTotal);
             for (size_t i = 0; i < std::size(src.ProximityScores); i++)
             {
-                dst.ProximityScores[i] = src.ProximityScores[i];
+                dst.ProximityScores[i] = SWAP_IF_BE(src.ProximityScores[i]);
             }
-            dst.AmountOfBrakes = src.NumBrakes;
-            dst.AmountOfReversers = src.NumReversers;
-            dst.StationFlags = src.StationFlags;
+            dst.AmountOfBrakes = SWAP_IF_BE(src.NumBrakes);
+            dst.AmountOfReversers = SWAP_IF_BE(src.NumReversers);
+            dst.StationFlags = SWAP_IF_BE(src.StationFlags);
         }
 
         void ImportRideMeasurements()
@@ -1141,9 +1268,9 @@ namespace RCT2
         void ImportRideMeasurement(RideMeasurement& dst, const RCT12RideMeasurement& src)
         {
             dst.flags = src.Flags;
-            dst.last_use_tick = src.LastUseTick;
-            dst.num_items = src.NumItems;
-            dst.current_item = src.CurrentItem;
+            dst.last_use_tick = SWAP_IF_BE(src.LastUseTick);
+            dst.num_items = SWAP_IF_BE(src.NumItems);
+            dst.current_item = SWAP_IF_BE(src.CurrentItem);
             dst.vehicle_index = src.VehicleIndex;
             dst.current_station = StationIndex::FromUnderlying(src.CurrentStation);
             for (size_t i = 0; i < std::size(src.Velocity); i++)
@@ -1250,7 +1377,8 @@ namespace RCT2
             {
                 if (_s6.PeepSpawns[i].x != RCT12_PEEP_SPAWN_UNDEFINED)
                 {
-                    PeepSpawn spawn = { _s6.PeepSpawns[i].x, _s6.PeepSpawns[i].y, _s6.PeepSpawns[i].z * 16,
+                    PeepSpawn spawn = { SWAP_IF_BE(_s6.PeepSpawns[i].x),
+                                        SWAP_IF_BE(_s6.PeepSpawns[i].y), _s6.PeepSpawns[i].z * 16,
                                         _s6.PeepSpawns[i].direction };
                     gPeepSpawns.push_back(spawn);
                 }
@@ -1373,13 +1501,13 @@ namespace RCT2
 
                     dst2->SetSlope(src2->GetSlope());
 
-                    dst2->SetSurfaceStyle(src2->GetSurfaceStyle());
-                    dst2->SetEdgeStyle(src2->GetEdgeStyle());
+                    dst2->SetSurfaceStyle(SWAP_IF_BE(src2->GetSurfaceStyle()));
+                    dst2->SetEdgeStyle(SWAP_IF_BE(src2->GetEdgeStyle()));
 
                     dst2->SetGrassLength(src2->GetGrassLength());
                     dst2->SetOwnership(src2->GetOwnership());
                     dst2->SetParkFences(src2->GetParkFences());
-                    dst2->SetWaterHeight(src2->GetWaterHeight());
+                    dst2->SetWaterHeight(SWAP_IF_BE(src2->GetWaterHeight()));
                     dst2->SetHasTrackThatNeedsWater(src2->HasTrackThatNeedsWater());
 
                     break;
@@ -1463,7 +1591,7 @@ namespace RCT2
                     const auto& rtd = GetRideTypeDescriptor(rideType);
                     if (rtd.HasFlag(RIDE_TYPE_FLAG_IS_MAZE))
                     {
-                        dst2->SetMazeEntry(src2->GetMazeEntry());
+                        dst2->SetMazeEntry(SWAP_IF_BE(src2->GetMazeEntry()));
                     }
                     else if (rideType == RIDE_TYPE_GHOST_TRAIN)
                     {
@@ -1570,8 +1698,8 @@ namespace RCT2
                     auto dst2 = dst->AsLargeScenery();
                     auto src2 = src->AsLargeScenery();
 
-                    dst2->SetEntryIndex(src2->GetEntryIndex());
-                    dst2->SetSequenceIndex(src2->GetSequenceIndex());
+                    dst2->SetEntryIndex(SWAP_IF_BE(src2->GetEntryIndex()));
+                    dst2->SetSequenceIndex(SWAP_IF_BE(src2->GetSequenceIndex()));
                     dst2->SetPrimaryColour(src2->GetPrimaryColour());
                     dst2->SetSecondaryColour(src2->GetSecondaryColour());
 
@@ -1678,7 +1806,7 @@ namespace RCT2
                 // Loop over the bits of the uint32_t
                 for (int32_t j = 0; j < 32; j++)
                 {
-                    int8_t bit = (_s6.PatrolAreas[peepOffset + i] >> j) & 1;
+                    int8_t bit = (SWAP_IF_BE(_s6.PatrolAreas[peepOffset + i]) >> j) & 1;
                     if (bit == 0)
                     {
                         // No patrol for this area
@@ -1722,15 +1850,17 @@ namespace RCT2
             {
                 dst->SetName(GetUserString(src->NameStringIdx));
             }
-            dst->NextLoc = { src->NextX, src->NextY, src->NextZ * COORDS_Z_STEP };
+            dst->NextLoc = { SWAP_IF_BE(src->NextX),
+                             SWAP_IF_BE(src->NextY),
+                             SWAP_IF_BE(src->NextZ) * COORDS_Z_STEP };
             dst->NextFlags = src->NextFlags;
             dst->State = static_cast<PeepState>(src->State);
             dst->SubState = src->SubState;
             dst->SpriteType = static_cast<PeepSpriteType>(src->SpriteType);
             dst->TshirtColour = src->TshirtColour;
             dst->TrousersColour = src->TrousersColour;
-            dst->DestinationX = src->DestinationX;
-            dst->DestinationY = src->DestinationY;
+            dst->DestinationX = SWAP_IF_BE(src->DestinationX);
+            dst->DestinationY = SWAP_IF_BE(src->DestinationY);
             dst->DestinationTolerance = src->DestinationTolerance;
             dst->Var37 = src->Var37;
             dst->Energy = src->Energy;
@@ -1740,7 +1870,7 @@ namespace RCT2
             dst->CurrentRide = RCT12RideIdToOpenRCT2RideId(src->CurrentRide);
             dst->CurrentRideStation = StationIndex::FromUnderlying(src->CurrentRideStation);
             dst->CurrentTrain = src->CurrentTrain;
-            dst->TimeToSitdown = src->TimeToSitdown;
+            dst->TimeToSitdown = SWAP_IF_BE(src->TimeToSitdown);
             dst->SpecialSprite = src->SpecialSprite;
             dst->ActionSpriteType = static_cast<PeepActionSpriteType>(src->ActionSpriteType);
             dst->NextActionSpriteType = static_cast<PeepActionSpriteType>(src->NextActionSpriteType);
@@ -1750,9 +1880,9 @@ namespace RCT2
             dst->StepProgress = src->StepProgress;
             dst->PeepDirection = src->Direction;
             dst->InteractionRideIndex = RCT12RideIdToOpenRCT2RideId(src->InteractionRideIndex);
-            dst->PeepId = src->Id;
+            dst->PeepId = SWAP_IF_BE(src->Id);
             dst->PathCheckOptimisation = src->PathCheckOptimisation;
-            dst->PeepFlags = src->PeepFlags;
+            dst->PeepFlags = SWAP_IF_BE(src->PeepFlags);
             if (isNullLocation(src->PathfindGoal))
             {
                 dst->PathfindGoal.SetNull();
@@ -1849,13 +1979,17 @@ namespace RCT2
         {
             dst->Type = GetEntityTypeFromRCT2Sprite(src);
             dst->SpriteData.HeightMin = src->SpriteHeightNegative;
-            dst->Id = EntityId::FromUnderlying(src->EntityIndex);
-            dst->x = src->x;
-            dst->y = src->y;
-            dst->z = src->z;
+            dst->Id = EntityId::FromUnderlying(SWAP_IF_BE(src->EntityIndex));
+            dst->x = SWAP_IF_BE(src->x);
+            dst->y = SWAP_IF_BE(src->y);
+            dst->z = SWAP_IF_BE(src->z);
             dst->SpriteData.Width = src->SpriteWidth;
             dst->SpriteData.HeightMax = src->SpriteHeightPositive;
-            dst->SpriteData.SpriteRect = ScreenRect(src->SpriteLeft, src->SpriteTop, src->SpriteRight, src->SpriteBottom);
+            dst->SpriteData.SpriteRect = 
+                ScreenRect(SWAP_IF_BE(src->SpriteLeft),
+                           SWAP_IF_BE(src->SpriteTop),
+                           SWAP_IF_BE(src->SpriteRight),
+                           SWAP_IF_BE(src->SpriteBottom));
             dst->Orientation = src->EntityDirection;
         }
 
@@ -1981,16 +2115,18 @@ namespace RCT2
         dst->SubType = ::Vehicle::Type(src->Type);
         dst->Pitch = src->Pitch;
         dst->bank_rotation = src->BankRotation;
-        dst->remaining_distance = src->RemainingDistance;
-        dst->velocity = src->Velocity;
-        dst->acceleration = src->Acceleration;
+        dst->remaining_distance = SWAP_IF_BE(src->RemainingDistance);
+        dst->velocity = SWAP_IF_BE(src->Velocity);
+        dst->acceleration = SWAP_IF_BE(src->Acceleration);
         dst->ride = RideId::FromUnderlying(src->Ride);
         dst->vehicle_type = src->VehicleType;
         dst->colours.Body = src->Colours.BodyColour;
         dst->colours.Trim = src->Colours.TrimColour;
         dst->colours.Tertiary = src->ColoursExtended;
-        dst->track_progress = src->TrackProgress;
-        dst->TrackLocation = { src->TrackX, src->TrackY, src->TrackZ };
+        dst->track_progress = SWAP_IF_BE(src->TrackProgress); // TODO: Questionable, 2 byte union
+        dst->TrackLocation = { SWAP_IF_BE(src->TrackX),
+                               SWAP_IF_BE(src->TrackY),
+                               SWAP_IF_BE(src->TrackZ) };
         if (src->BoatLocation.IsNull() || static_cast<RideMode>(ride.Mode) != RideMode::BoatHire
             || src->Status != static_cast<uint8_t>(::Vehicle::Status::TravellingBoat))
         {
@@ -2027,16 +2163,16 @@ namespace RCT2
             dst->SetTrackType(0);
         }
 
-        dst->next_vehicle_on_train = EntityId::FromUnderlying(src->NextVehicleOnTrain);
-        dst->prev_vehicle_on_ride = EntityId::FromUnderlying(src->PrevVehicleOnRide);
-        dst->next_vehicle_on_ride = EntityId::FromUnderlying(src->NextVehicleOnRide);
-        dst->var_44 = src->Var44;
-        dst->mass = src->Mass;
-        dst->Flags = src->UpdateFlags;
+        dst->next_vehicle_on_train = EntityId::FromUnderlying(SWAP_IF_BE(src->NextVehicleOnTrain));
+        dst->prev_vehicle_on_ride = EntityId::FromUnderlying(SWAP_IF_BE(src->PrevVehicleOnRide));
+        dst->next_vehicle_on_ride = EntityId::FromUnderlying(SWAP_IF_BE(src->NextVehicleOnRide));
+        dst->var_44 = SWAP_IF_BE(src->Var44);
+        dst->mass = SWAP_IF_BE(src->Mass);
+        dst->Flags = SWAP_IF_BE(src->UpdateFlags);
         dst->SwingSprite = src->SwingSprite;
         dst->current_station = StationIndex::FromUnderlying(src->CurrentStation);
-        dst->current_time = src->CurrentTime;
-        dst->crash_z = src->CrashZ;
+        dst->current_time = SWAP_IF_BE(src->CurrentTime);
+        dst->crash_z = SWAP_IF_BE(src->CrashZ);
 
         ::Vehicle::Status statusSrc = ::Vehicle::Status::MovingToEndOfStation;
         if (src->Status <= static_cast<uint8_t>(::Vehicle::Status::StoppedByBlockBrakes))
@@ -2048,32 +2184,32 @@ namespace RCT2
         dst->sub_state = src->SubState;
         for (size_t i = 0; i < std::size(src->Peep); i++)
         {
-            dst->peep[i] = EntityId::FromUnderlying(src->Peep[i]);
+            dst->peep[i] = EntityId::FromUnderlying(SWAP_IF_BE(src->Peep[i]));
             dst->peep_tshirt_colours[i] = src->PeepTshirtColours[i];
         }
         dst->num_seats = src->NumSeats;
         dst->num_peeps = src->NumPeeps;
         dst->next_free_seat = src->NextFreeSeat;
         dst->restraints_position = src->RestraintsPosition;
-        dst->crash_x = src->CrashX;
-        dst->sound2_flags = src->Sound2Flags;
+        dst->crash_x = SWAP_IF_BE(src->CrashX);
+        dst->sound2_flags = SWAP_IF_BE(src->Sound2Flags);
         dst->spin_sprite = src->SpinSprite;
         dst->sound1_id = static_cast<OpenRCT2::Audio::SoundId>(src->Sound1Id);
         dst->sound1_volume = src->Sound1Volume;
         dst->sound2_id = static_cast<OpenRCT2::Audio::SoundId>(src->Sound2Id);
         dst->sound2_volume = src->Sound2Volume;
         dst->sound_vector_factor = src->SoundVectorFactor;
-        dst->time_waiting = src->TimeWaiting;
+        dst->time_waiting = SWAP_IF_BE(src->TimeWaiting);
         dst->speed = src->Speed;
         dst->powered_acceleration = src->PoweredAcceleration;
         dst->CollisionDetectionTimer = src->CollisionDetectionTimer;
         dst->animation_frame = src->AnimationFrame;
-        dst->animationState = src->AnimationState;
+        dst->animationState = SWAP_IF_BE(src->AnimationState);
         dst->scream_sound_id = static_cast<OpenRCT2::Audio::SoundId>(src->ScreamSoundId);
         dst->TrackSubposition = VehicleTrackSubposition{ src->TrackSubposition };
         dst->NumLaps = src->NumLaps;
         dst->brake_speed = src->BrakeSpeed;
-        dst->lost_time_out = src->LostTimeOut;
+        dst->lost_time_out = SWAP_IF_BE(src->LostTimeOut);
         dst->vertical_drop_countdown = src->VerticalDropCountdown;
         dst->var_D3 = src->VarD3;
         dst->mini_golf_current_animation = MiniGolfAnimation(src->MiniGolfCurrentAnimation);

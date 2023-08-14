@@ -131,7 +131,7 @@ static void RideObjectUpdateRideType(RideObjectEntry& rideEntry)
 void RideObject::ReadLegacy(IReadObjectContext* context, IStream* stream)
 {
     stream->Seek(8, STREAM_SEEK_CURRENT);
-    _legacyType.flags = stream->ReadValue<uint32_t>();
+    _legacyType.flags = SWAP_IF_BE(stream->ReadValue<uint32_t>());
     for (auto& rideType : _legacyType.ride_type)
     {
         rideType = stream->ReadValue<uint8_t>();
@@ -153,6 +153,7 @@ void RideObject::ReadLegacy(IReadObjectContext* context, IStream* stream)
     // Skip Pad019
     stream->Seek(1, STREAM_SEEK_CURRENT);
 
+    LOG_VERBOSE("reading cars");
     for (auto& carEntry : _legacyType.Cars)
     {
         ReadLegacyCar(context, stream, &carEntry);
@@ -167,6 +168,7 @@ void RideObject::ReadLegacy(IReadObjectContext* context, IStream* stream)
     _legacyType.shop_item[0] = static_cast<ShopItem>(stream->ReadValue<uint8_t>());
     _legacyType.shop_item[1] = static_cast<ShopItem>(stream->ReadValue<uint8_t>());
 
+    LOG_VERBOSE("String table stuff");
     GetStringTable().Read(context, stream, ObjectStringID::NAME);
     GetStringTable().Read(context, stream, ObjectStringID::DESCRIPTION);
     GetStringTable().Read(context, stream, ObjectStringID::CAPACITY);
@@ -200,6 +202,7 @@ void RideObject::ReadLegacy(IReadObjectContext* context, IStream* stream)
         }
     }
 
+    LOG_VERBOSE("peep positions");
     // Read peep loading positions
     for (int32_t i = 0; i < RCT2::ObjectLimits::MaxCarTypesPerRideEntry; i++)
     {
@@ -209,7 +212,7 @@ void RideObject::ReadLegacy(IReadObjectContext* context, IStream* stream)
         uint16_t numPeepLoadingPositions = stream->ReadValue<uint8_t>();
         if (numPeepLoadingPositions == 255)
         {
-            numPeepLoadingPositions = stream->ReadValue<uint16_t>();
+            numPeepLoadingPositions = SWAP_IF_BE(stream->ReadValue<uint16_t>());
         }
 
         if (_legacyType.Cars[i].flags & CAR_ENTRY_FLAG_LOADING_WAYPOINTS)
@@ -245,6 +248,7 @@ void RideObject::ReadLegacy(IReadObjectContext* context, IStream* stream)
         }
     }
 
+    LOG_VERBOSE("image table read");
     GetImageTable().Read(context, stream);
 
     // Validate properties
@@ -405,19 +409,19 @@ void RideObject::SetRepositoryItem(ObjectRepositoryItem* item) const
 
 void RideObject::ReadLegacyCar([[maybe_unused]] IReadObjectContext* context, IStream* stream, CarEntry* car)
 {
-    car->TabRotationMask = stream->ReadValue<uint16_t>();
+    car->TabRotationMask = SWAP_IF_BE(stream->ReadValue<uint16_t>());
     stream->Seek(2 * 1, STREAM_SEEK_CURRENT);
-    car->spacing = stream->ReadValue<uint32_t>();
-    car->car_mass = stream->ReadValue<uint16_t>();
+    car->spacing = SWAP_IF_BE(stream->ReadValue<uint32_t>());
+    car->car_mass = SWAP_IF_BE(stream->ReadValue<uint16_t>());
     car->tab_height = stream->ReadValue<int8_t>();
     car->num_seats = stream->ReadValue<uint8_t>();
-    uint16_t spriteGroups = stream->ReadValue<uint16_t>();
+    uint16_t spriteGroups = SWAP_IF_BE(stream->ReadValue<uint16_t>());
     car->sprite_width = stream->ReadValue<uint8_t>();
     car->sprite_height_negative = stream->ReadValue<uint8_t>();
     car->sprite_height_positive = stream->ReadValue<uint8_t>();
     auto legacyAnimation = stream->ReadValue<uint8_t>();
-    car->flags = stream->ReadValue<uint32_t>();
-    car->base_num_frames = stream->ReadValue<uint16_t>();
+    car->flags = SWAP_IF_BE(stream->ReadValue<uint32_t>());
+    car->base_num_frames = SWAP_IF_BE(stream->ReadValue<uint16_t>());
     stream->Seek(15 * 4, STREAM_SEEK_CURRENT);
     car->no_seating_rows = stream->ReadValue<uint8_t>();
     car->spinning_inertia = stream->ReadValue<uint8_t>();

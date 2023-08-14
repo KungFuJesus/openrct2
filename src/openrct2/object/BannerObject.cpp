@@ -22,13 +22,15 @@ void BannerObject::ReadLegacy(IReadObjectContext* context, OpenRCT2::IStream* st
     stream->Seek(6, OpenRCT2::STREAM_SEEK_CURRENT);
     _legacyType.scrolling_mode = stream->ReadValue<uint8_t>();
     _legacyType.flags = stream->ReadValue<uint8_t>();
-    _legacyType.price = stream->ReadValue<money16>();
+    _legacyType.price = SWAP_IF_BE(stream->ReadValue<money16>());
     _legacyType.scenery_tab_id = OBJECT_ENTRY_INDEX_NULL;
     stream->Seek(2, OpenRCT2::STREAM_SEEK_CURRENT);
 
     GetStringTable().Read(context, stream, ObjectStringID::NAME);
 
     RCTObjectEntry sgEntry = stream->ReadValue<RCTObjectEntry>();
+    sgEntry.checksum = SWAP_IF_BE(sgEntry.checksum);
+    sgEntry.flags = SWAP_IF_BE(sgEntry.flags);
     SetPrimarySceneryGroup(ObjectEntryDescriptor(sgEntry));
 
     GetImageTable().Read(context, stream);

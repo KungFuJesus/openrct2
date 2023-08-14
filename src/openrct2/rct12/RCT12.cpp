@@ -267,7 +267,9 @@ uint8_t RCT12TrackElement::GetSeatRotation() const
 
 uint16_t RCT12TrackElement::GetMazeEntry() const
 {
-    return MazeEntry;
+    /* Because this is a unioned type, we have to always
+     * swap this conditionally */
+    return SWAP_IF_BE(MazeEntry);
 }
 
 uint8_t RCT12TrackElement::GetPhotoTimeout() const

@@ -109,7 +109,7 @@ size_t SawyerCodingDecodeSC4(const uint8_t* src, uint8_t* dst, size_t length, si
         dst[i + 1] = Numerics::ror8(dst[i + 1], 3);
 
         uint32_t* code = reinterpret_cast<uint32_t*>(&dst[i]);
-        *code = Numerics::rol32(*code, 9);
+        *code = SWAP_IF_BE(Numerics::rol32(*code, 9));
     }
 
     return decodedLength;
@@ -122,7 +122,7 @@ size_t SawyerCodingEencodeSV4(const uint8_t* src, uint8_t* dst, size_t length)
 
     // Append checksum
     uint32_t checksum = SawyerCodingCalculateChecksum(dst, encodedLength);
-    *(reinterpret_cast<uint32_t*>(&dst[encodedLength])) = checksum;
+    *(reinterpret_cast<uint32_t*>(&dst[encodedLength])) = SWAP_IF_BE(checksum);
 
     return encodedLength + 4;
 }
@@ -145,7 +145,7 @@ size_t SawyerCodingEncodeTD6(const uint8_t* src, uint8_t* dst, size_t length)
     }
     checksum -= 0x1D4C1;
 
-    *(reinterpret_cast<uint32_t*>(&dst[output_length])) = checksum;
+    *(reinterpret_cast<uint32_t*>(&dst[output_length])) = SWAP_IF_BE(checksum);
     output_length += 4;
     return output_length;
 }
@@ -156,7 +156,8 @@ int32_t SawyerCodingValidateTrackChecksum(const uint8_t* src, size_t length)
     if (length < 4)
         return 0;
 
-    uint32_t file_checksum = *(reinterpret_cast<const uint32_t*>(&src[length - 4]));
+    //uint32_t file_checksum = *(reinterpret_cast<const uint32_t*>(&src[length - 4]));
+    uint32_t file_checksum = SWAP_IF_BE(*(reinterpret_cast<const uint32_t*>(&src[length - 4])));
 
     uint32_t checksum = 0;
     for (size_t i = 0; i < length - 4; i++)
@@ -397,7 +398,8 @@ int32_t SawyerCodingDetectFileType(const uint8_t* src, size_t length)
 
     // Currently can't detect TD4, as the checksum is the same as SC4 (need alternative method)
 
-    uint32_t checksum = *(reinterpret_cast<const uint32_t*>(&src[length - 4]));
+    ///uint32_t checksum = *(reinterpret_cast<const uint32_t*>(&src[length - 4]));
+    uint32_t checksum = SWAP_IF_BE(*(reinterpret_cast<const uint32_t*>(&src[length - 4])));
     uint32_t actualChecksum = 0;
     for (i = 0; i < length - 4; i++)
     {

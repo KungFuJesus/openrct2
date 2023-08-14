@@ -106,20 +106,20 @@ static void ReadAndConvertGxDat(IStream* stream, size_t count, bool is_rctc, G1E
 
             // Double cast to silence compiler warning about casting to
             // pointer from integer of mismatched length.
-            elements[i].offset = reinterpret_cast<uint8_t*>(static_cast<uintptr_t>(src.offset));
-            elements[i].width = src.width;
-            elements[i].height = src.height;
-            elements[i].x_offset = src.x_offset;
-            elements[i].y_offset = src.y_offset;
-            elements[i].flags = src.flags;
+            elements[i].offset = reinterpret_cast<uint8_t*>(SWAP_IF_BE(static_cast<uintptr_t>(src.offset)));
+            elements[i].width = SWAP_IF_BE(src.width);
+            elements[i].height = SWAP_IF_BE(src.height);
+            elements[i].x_offset = SWAP_IF_BE(src.x_offset);
+            elements[i].y_offset = SWAP_IF_BE(src.y_offset);
+            elements[i].flags = SWAP_IF_BE(src.flags);
 
             if (src.flags & G1_FLAG_HAS_ZOOM_SPRITE)
             {
-                elements[i].zoomed_offset = static_cast<int32_t>(i - rctc_to_rct2_index(rctc - src.zoomed_offset));
+                elements[i].zoomed_offset = static_cast<int32_t>(i - rctc_to_rct2_index(rctc - SWAP_IF_BE(src.zoomed_offset)));
             }
             else
             {
-                elements[i].zoomed_offset = src.zoomed_offset;
+                elements[i].zoomed_offset = SWAP_IF_BE(src.zoomed_offset);
             }
 
             ++rctc;
@@ -145,13 +145,13 @@ static void ReadAndConvertGxDat(IStream* stream, size_t count, bool is_rctc, G1E
 
             // Double cast to silence compiler warning about casting to
             // pointer from integer of mismatched length.
-            elements[i].offset = reinterpret_cast<uint8_t*>(static_cast<uintptr_t>(src.offset));
-            elements[i].width = src.width;
-            elements[i].height = src.height;
-            elements[i].x_offset = src.x_offset;
-            elements[i].y_offset = src.y_offset;
-            elements[i].flags = src.flags;
-            elements[i].zoomed_offset = src.zoomed_offset;
+            elements[i].offset = reinterpret_cast<uint8_t*>(static_cast<uintptr_t>(SWAP_IF_BE(src.offset)));
+            elements[i].width = SWAP_IF_BE(src.width);
+            elements[i].height = SWAP_IF_BE(src.height);
+            elements[i].x_offset = SWAP_IF_BE(src.x_offset);
+            elements[i].y_offset = SWAP_IF_BE(src.y_offset);
+            elements[i].flags = SWAP_IF_BE(src.flags);
+            elements[i].zoomed_offset = SWAP_IF_BE(src.zoomed_offset);
         }
     }
 }
@@ -202,6 +202,8 @@ bool GfxLoadG1(const IPlatformEnvironment& env)
         auto path = env.FindFile(DIRBASE::RCT2, DIRID::DATA, u8"g1.dat");
         auto fs = FileStream(path, FILE_MODE_OPEN);
         _g1.header = fs.ReadValue<RCTG1Header>();
+        _g1.header.num_entries = SWAP_IF_BE(_g1.header.num_entries);
+        _g1.header.total_size = SWAP_IF_BE(_g1.header.total_size);
 
         LOG_VERBOSE("g1.dat, number of entries: %u", _g1.header.num_entries);
 
@@ -268,18 +270,23 @@ bool GfxLoadG2()
 
     auto env = GetContext()->GetPlatformEnvironment();
 
-    std::string path = Path::Combine(env->GetDirectoryPath(DIRBASE::OPENRCT2), u8"g2.dat");
+    auto path = env->FindFile(DIRBASE::RCT2, DIRID::DATA, u8"g2.dat");
+    //std::string path = Path::Combine(env->GetDirectoryPath(DIRBASE::OPENRCT2), u8"g2.dat");
 
     try
     {
+        LOG_VERBOSE("Reading from %s", path.c_str());
         auto fs = FileStream(path, FILE_MODE_OPEN);
         _g2.header = fs.ReadValue<RCTG1Header>();
+        _g2.header.num_entries = SWAP_IF_BE(_g2.header.num_entries);
+        _g2.header.total_size = SWAP_IF_BE(_g2.header.total_size);
 
         // Read element headers
         _g2.elements.resize(_g2.header.num_entries);
         ReadAndConvertGxDat(&fs, _g2.header.num_entries, false, _g2.elements.data());
 
         // Read element data
+        LOG_VERBOSE("Reading element data");
         _g2.data = fs.ReadArray<uint8_t>(_g2.header.total_size);
 
         if (_g2.header.num_entries != G2_SPRITE_COUNT)
@@ -299,17 +306,19 @@ bool GfxLoadG2()
         }
 
         // Fix entry data offsets
+        LOG_VERBOSE("applying offsets");
         for (uint32_t i = 0; i < _g2.header.num_entries; i++)
         {
             _g2.elements[i].offset += reinterpret_cast<uintptr_t>(_g2.data.get());
         }
         return true;
     }
-    catch (const std::exception&)
+    catch (const std::exception& ex)
     {
         _g2.elements.clear();
         _g2.elements.shrink_to_fit();
 
+        LOG_VERBOSE("exception: %s", ex.what());
         LOG_FATAL("Unable to load g2 graphics");
         if (!gOpenRCT2Headless)
         {

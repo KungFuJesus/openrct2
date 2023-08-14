@@ -54,7 +54,7 @@ struct NetworkPacket final
         {
             T local;
             std::memcpy(&local, &GetData()[BytesRead], sizeof(local));
-            value = ByteSwapBE(local);
+            value = SWAP_IF_LE(local);
             BytesRead += sizeof(value);
         }
         return *this;
@@ -62,7 +62,7 @@ struct NetworkPacket final
 
     template<typename T> NetworkPacket& operator<<(T value)
     {
-        T swapped = ByteSwapBE(value);
+        T swapped = SWAP_IF_LE(value);
         Write(&swapped, sizeof(T));
         return *this;
     }

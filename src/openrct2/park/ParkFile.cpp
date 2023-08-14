@@ -224,8 +224,8 @@ namespace OpenRCT2
 
                 entry.ObjectiveType = cs.Read<uint8_t>();
                 entry.ObjectiveArg1 = cs.Read<uint8_t>();
-                entry.ObjectiveArg3 = cs.Read<int16_t>();
-                entry.ObjectiveArg2 = cs.Read<int32_t>();
+                entry.ObjectiveArg3 = SWAP_IF_BE(cs.Read<int16_t>());
+                entry.ObjectiveArg2 = SWAP_IF_BE(cs.Read<int32_t>());
 
                 entry.SourceGame = ScenarioSource::Other;
             });
@@ -282,11 +282,11 @@ namespace OpenRCT2
                      version](OrcaStream::ChunkStream& cs) {
                         ObjectEntryIndex surfaceCount = 0;
                         ObjectEntryIndex railingsCount = 0;
-                        auto numSubLists = cs.Read<uint16_t>();
+                        auto numSubLists = SWAP_IF_BE(cs.Read<uint16_t>());
                         for (size_t i = 0; i < numSubLists; i++)
                         {
-                            auto objectType = static_cast<ObjectType>(cs.Read<uint16_t>());
-                            auto subListSize = static_cast<ObjectEntryIndex>(cs.Read<uint32_t>());
+                            auto objectType = static_cast<ObjectType>(SWAP_IF_BE(cs.Read<uint16_t>()));
+                            auto subListSize = static_cast<ObjectEntryIndex>(SWAP_IF_BE(cs.Read<uint32_t>()));
                             for (ObjectEntryIndex j = 0; j < subListSize; j++)
                             {
                                 auto kind = cs.Read<uint8_t>();
@@ -299,6 +299,8 @@ namespace OpenRCT2
                                     {
                                         RCTObjectEntry datEntry;
                                         cs.Read(&datEntry, sizeof(datEntry));
+                                        datEntry.checksum = SWAP_IF_BE(datEntry.checksum);
+                                        datEntry.flags = SWAP_IF_BE(datEntry.flags);
                                         ObjectEntryDescriptor desc(datEntry);
                                         if (version <= 2 && datEntry.GetType() == ObjectType::Paths)
                                         {
@@ -382,13 +384,13 @@ namespace OpenRCT2
                     auto objectList = objManager.GetLoadedObjects();
 
                     // Write number of object sub lists
-                    cs.Write(static_cast<uint16_t>(TransientObjectTypes.size()));
+                    cs.Write(SWAP_IF_BE(static_cast<uint16_t>(TransientObjectTypes.size())));
                     for (auto objectType : TransientObjectTypes)
                     {
                         // Write sub list
                         const auto& list = objectList.GetList(objectType);
-                        cs.Write(static_cast<uint16_t>(objectType));
-                        cs.Write(static_cast<uint32_t>(list.size()));
+                        cs.Write(SWAP_IF_BE(static_cast<uint16_t>(objectType)));
+                        cs.Write(SWAP_IF_BE(static_cast<uint32_t>(list.size())));
                         for (const auto& entry : list)
                         {
                             if (entry.HasValue())
@@ -402,7 +404,14 @@ namespace OpenRCT2
                                 else
                                 {
                                     cs.Write(DESCRIPTOR_DAT);
+#if RCT2_ENDIANNESS == __ORDER_BIG_ENDIAN__
+                                    RCTObjectEntry entryLE = entry.Entry;
+                                    entryLE.flags = SWAP_IF_BE(entryLE.flags);
+                                    entryLE.checksum = SWAP_IF_BE(entryLE.checksum);
+                                    cs.Write(&entryLE, sizeof(RCTObjectEntry));
+#else
                                     cs.Write(&entry.Entry, sizeof(RCTObjectEntry));
+#endif
                                 }
                             }
                             else

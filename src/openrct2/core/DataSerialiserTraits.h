@@ -44,14 +44,14 @@ template<typename T> struct DataSerializerTraitsEnum
 
     static void encode(OpenRCT2::IStream* stream, const T& val)
     {
-        TUnderlying temp = ByteSwapBE(static_cast<TUnderlying>(val));
+        TUnderlying temp = SWAP_IF_LE(static_cast<TUnderlying>(val));
         stream->Write(&temp);
     }
     static void decode(OpenRCT2::IStream* stream, T& val)
     {
         TUnderlying temp;
         stream->Read(&temp);
-        val = static_cast<T>(ByteSwapBE(temp));
+        val = static_cast<T>(SWAP_IF_LE(temp));
     }
     static void log(OpenRCT2::IStream* stream, const T& val)
     {
@@ -70,14 +70,14 @@ template<typename T> struct DataSerializerTraitsIntegral
 {
     static void encode(OpenRCT2::IStream* stream, const T& val)
     {
-        T temp = ByteSwapBE(val);
+        T temp = SWAP_IF_LE(val);
         stream->Write(&temp);
     }
     static void decode(OpenRCT2::IStream* stream, T& val)
     {
         T temp;
         stream->Read(&temp);
-        val = ByteSwapBE(temp);
+        val = SWAP_IF_LE(temp);
     }
     static void log(OpenRCT2::IStream* stream, const T& val)
     {
@@ -149,7 +149,7 @@ template<> struct DataSerializerTraitsT<std::string>
     static void encode(OpenRCT2::IStream* stream, const std::string& str)
     {
         uint16_t len = static_cast<uint16_t>(str.size());
-        uint16_t swapped = ByteSwapBE(len);
+        uint16_t swapped = SWAP_IF_LE(len);
         stream->Write(&swapped);
         if (len == 0)
         {
@@ -161,7 +161,7 @@ template<> struct DataSerializerTraitsT<std::string>
     {
         uint16_t len;
         stream->Read(&len);
-        len = ByteSwapBE(len);
+        len = SWAP_IF_LE(len);
         if (len == 0)
         {
             res.clear();
@@ -186,14 +186,14 @@ template<> struct DataSerializerTraitsT<NetworkPlayerId_t>
     static void encode(OpenRCT2::IStream* stream, const NetworkPlayerId_t& val)
     {
         uint32_t temp = static_cast<uint32_t>(val.id);
-        temp = ByteSwapBE(temp);
+        temp = SWAP_IF_LE(temp);
         stream->Write(&temp);
     }
     static void decode(OpenRCT2::IStream* stream, NetworkPlayerId_t& val)
     {
         uint32_t temp;
         stream->Read(&temp);
-        val.id = static_cast<decltype(val.id)>(ByteSwapBE(temp));
+        val.id = static_cast<decltype(val.id)>(SWAP_IF_LE(temp));
     }
     static void log(OpenRCT2::IStream* stream, const NetworkPlayerId_t& val)
     {
@@ -272,7 +272,7 @@ template<typename _Ty, size_t _Size> struct DataSerializerTraitsPODArray
     static void encode(OpenRCT2::IStream* stream, const _Ty (&val)[_Size])
     {
         uint16_t len = static_cast<uint16_t>(_Size);
-        uint16_t swapped = ByteSwapBE(len);
+        uint16_t swapped = SWAP_IF_LE(len);
         stream->Write(&swapped);
 
         DataSerializerTraits<_Ty> s;
@@ -285,7 +285,7 @@ template<typename _Ty, size_t _Size> struct DataSerializerTraitsPODArray
     {
         uint16_t len;
         stream->Read(&len);
-        len = ByteSwapBE(len);
+        len = SWAP_IF_LE(len);
 
         if (len != _Size)
             throw std::runtime_error("Invalid size, can't decode");
@@ -340,7 +340,7 @@ template<typename _Ty, size_t _Size> struct DataSerializerTraitsT<std::array<_Ty
     static void encode(OpenRCT2::IStream* stream, const std::array<_Ty, _Size>& val)
     {
         uint16_t len = static_cast<uint16_t>(_Size);
-        uint16_t swapped = ByteSwapBE(len);
+        uint16_t swapped = SWAP_IF_LE(len);
         stream->Write(&swapped);
 
         DataSerializerTraits<_Ty> s;
@@ -353,7 +353,7 @@ template<typename _Ty, size_t _Size> struct DataSerializerTraitsT<std::array<_Ty
     {
         uint16_t len;
         stream->Read(&len);
-        len = ByteSwapBE(len);
+        len = SWAP_IF_LE(len);
 
         if (len != _Size)
             throw std::runtime_error("Invalid size, can't decode");
@@ -382,7 +382,7 @@ template<typename _Ty> struct DataSerializerTraitsT<std::vector<_Ty>>
     static void encode(OpenRCT2::IStream* stream, const std::vector<_Ty>& val)
     {
         uint16_t len = static_cast<uint16_t>(val.size());
-        uint16_t swapped = ByteSwapBE(len);
+        uint16_t swapped = SWAP_IF_LE(len);
         stream->Write(&swapped);
 
         DataSerializerTraits<_Ty> s;
@@ -395,7 +395,7 @@ template<typename _Ty> struct DataSerializerTraitsT<std::vector<_Ty>>
     {
         uint16_t len;
         stream->Read(&len);
-        len = ByteSwapBE(len);
+        len = SWAP_IF_LE(len);
 
         DataSerializerTraits<_Ty> s;
         for (auto i = 0; i < len; ++i)
@@ -422,17 +422,17 @@ template<> struct DataSerializerTraitsT<MapRange>
 {
     static void encode(OpenRCT2::IStream* stream, const MapRange& v)
     {
-        stream->WriteValue(ByteSwapBE(v.GetLeft()));
-        stream->WriteValue(ByteSwapBE(v.GetTop()));
-        stream->WriteValue(ByteSwapBE(v.GetRight()));
-        stream->WriteValue(ByteSwapBE(v.GetBottom()));
+        stream->WriteValue(SWAP_IF_LE(v.GetLeft()));
+        stream->WriteValue(SWAP_IF_LE(v.GetTop()));
+        stream->WriteValue(SWAP_IF_LE(v.GetRight()));
+        stream->WriteValue(SWAP_IF_LE(v.GetBottom()));
     }
     static void decode(OpenRCT2::IStream* stream, MapRange& v)
     {
-        auto l = ByteSwapBE(stream->ReadValue<int32_t>());
-        auto t = ByteSwapBE(stream->ReadValue<int32_t>());
-        auto r = ByteSwapBE(stream->ReadValue<int32_t>());
-        auto b = ByteSwapBE(stream->ReadValue<int32_t>());
+        auto l = SWAP_IF_LE(stream->ReadValue<int32_t>());
+        auto t = SWAP_IF_LE(stream->ReadValue<int32_t>());
+        auto r = SWAP_IF_LE(stream->ReadValue<int32_t>());
+        auto b = SWAP_IF_LE(stream->ReadValue<int32_t>());
         v = MapRange(l, t, r, b);
     }
     static void log(OpenRCT2::IStream* stream, const MapRange& v)
@@ -494,13 +494,13 @@ template<> struct DataSerializerTraitsT<TileCoordsXY>
 {
     static void encode(OpenRCT2::IStream* stream, const TileCoordsXY& coords)
     {
-        stream->WriteValue(ByteSwapBE(coords.x));
-        stream->WriteValue(ByteSwapBE(coords.y));
+        stream->WriteValue(SWAP_IF_LE(coords.x));
+        stream->WriteValue(SWAP_IF_LE(coords.y));
     }
     static void decode(OpenRCT2::IStream* stream, TileCoordsXY& coords)
     {
-        auto x = ByteSwapBE(stream->ReadValue<int32_t>());
-        auto y = ByteSwapBE(stream->ReadValue<int32_t>());
+        auto x = SWAP_IF_LE(stream->ReadValue<int32_t>());
+        auto y = SWAP_IF_LE(stream->ReadValue<int32_t>());
         coords = TileCoordsXY{ x, y };
     }
     static void log(OpenRCT2::IStream* stream, const TileCoordsXY& coords)
@@ -515,13 +515,13 @@ template<> struct DataSerializerTraitsT<CoordsXY>
 {
     static void encode(OpenRCT2::IStream* stream, const CoordsXY& coords)
     {
-        stream->WriteValue(ByteSwapBE(coords.x));
-        stream->WriteValue(ByteSwapBE(coords.y));
+        stream->WriteValue(SWAP_IF_LE(coords.x));
+        stream->WriteValue(SWAP_IF_LE(coords.y));
     }
     static void decode(OpenRCT2::IStream* stream, CoordsXY& coords)
     {
-        auto x = ByteSwapBE(stream->ReadValue<int32_t>());
-        auto y = ByteSwapBE(stream->ReadValue<int32_t>());
+        auto x = SWAP_IF_LE(stream->ReadValue<int32_t>());
+        auto y = SWAP_IF_LE(stream->ReadValue<int32_t>());
         coords = CoordsXY{ x, y };
     }
     static void log(OpenRCT2::IStream* stream, const CoordsXY& coords)
@@ -536,16 +536,16 @@ template<> struct DataSerializerTraitsT<CoordsXYZ>
 {
     static void encode(OpenRCT2::IStream* stream, const CoordsXYZ& coord)
     {
-        stream->WriteValue(ByteSwapBE(coord.x));
-        stream->WriteValue(ByteSwapBE(coord.y));
-        stream->WriteValue(ByteSwapBE(coord.z));
+        stream->WriteValue(SWAP_IF_LE(coord.x));
+        stream->WriteValue(SWAP_IF_LE(coord.y));
+        stream->WriteValue(SWAP_IF_LE(coord.z));
     }
 
     static void decode(OpenRCT2::IStream* stream, CoordsXYZ& coord)
     {
-        auto x = ByteSwapBE(stream->ReadValue<int32_t>());
-        auto y = ByteSwapBE(stream->ReadValue<int32_t>());
-        auto z = ByteSwapBE(stream->ReadValue<int32_t>());
+        auto x = SWAP_IF_LE(stream->ReadValue<int32_t>());
+        auto y = SWAP_IF_LE(stream->ReadValue<int32_t>());
+        auto z = SWAP_IF_LE(stream->ReadValue<int32_t>());
         coord = CoordsXYZ{ x, y, z };
     }
 
@@ -561,18 +561,18 @@ template<> struct DataSerializerTraitsT<CoordsXYZD>
 {
     static void encode(OpenRCT2::IStream* stream, const CoordsXYZD& coord)
     {
-        stream->WriteValue(ByteSwapBE(coord.x));
-        stream->WriteValue(ByteSwapBE(coord.y));
-        stream->WriteValue(ByteSwapBE(coord.z));
-        stream->WriteValue(ByteSwapBE(coord.direction));
+        stream->WriteValue(SWAP_IF_LE(coord.x));
+        stream->WriteValue(SWAP_IF_LE(coord.y));
+        stream->WriteValue(SWAP_IF_LE(coord.z));
+        stream->WriteValue(SWAP_IF_LE(coord.direction));
     }
 
     static void decode(OpenRCT2::IStream* stream, CoordsXYZD& coord)
     {
-        auto x = ByteSwapBE(stream->ReadValue<int32_t>());
-        auto y = ByteSwapBE(stream->ReadValue<int32_t>());
-        auto z = ByteSwapBE(stream->ReadValue<int32_t>());
-        auto d = ByteSwapBE(stream->ReadValue<uint8_t>());
+        auto x = SWAP_IF_LE(stream->ReadValue<int32_t>());
+        auto y = SWAP_IF_LE(stream->ReadValue<int32_t>());
+        auto z = SWAP_IF_LE(stream->ReadValue<int32_t>());
+        auto d = SWAP_IF_LE(stream->ReadValue<uint8_t>());
         coord = CoordsXYZD{ x, y, z, d };
     }
 
@@ -589,14 +589,14 @@ template<> struct DataSerializerTraitsT<NetworkCheatType_t>
 {
     static void encode(OpenRCT2::IStream* stream, const NetworkCheatType_t& val)
     {
-        uint32_t temp = ByteSwapBE(val.id);
+        uint32_t temp = SWAP_IF_LE(val.id);
         stream->Write(&temp);
     }
     static void decode(OpenRCT2::IStream* stream, NetworkCheatType_t& val)
     {
         uint32_t temp;
         stream->Read(&temp);
-        val.id = ByteSwapBE(temp);
+        val.id = SWAP_IF_LE(temp);
     }
     static void log(OpenRCT2::IStream* stream, const NetworkCheatType_t& val)
     {
@@ -609,7 +609,7 @@ template<> struct DataSerializerTraitsT<RCTObjectEntry>
 {
     static void encode(OpenRCT2::IStream* stream, const RCTObjectEntry& val)
     {
-        uint32_t temp = ByteSwapBE(val.flags);
+        uint32_t temp = SWAP_IF_LE(val.flags);
         stream->Write(&temp);
         stream->WriteArray(val.nameWOC, 12);
     }
@@ -617,7 +617,7 @@ template<> struct DataSerializerTraitsT<RCTObjectEntry>
     {
         uint32_t temp;
         stream->Read(&temp);
-        val.flags = ByteSwapBE(temp);
+        val.flags = SWAP_IF_LE(temp);
         auto str = stream->ReadArray<char>(12);
         memcpy(val.nameWOC, str.get(), 12);
     }
@@ -695,14 +695,14 @@ template<> struct DataSerializerTraitsT<TrackDesignMazeElement>
 {
     static void encode(OpenRCT2::IStream* stream, const TrackDesignMazeElement& val)
     {
-        uint32_t temp = ByteSwapBE(val.all);
+        uint32_t temp = SWAP_IF_LE(val.all);
         stream->Write(&temp);
     }
     static void decode(OpenRCT2::IStream* stream, TrackDesignMazeElement& val)
     {
         uint32_t temp;
         stream->Read(&temp);
-        val.all = ByteSwapBE(temp);
+        val.all = SWAP_IF_LE(temp);
     }
     static void log(OpenRCT2::IStream* stream, const TrackDesignMazeElement& val)
     {
@@ -845,18 +845,18 @@ template<> struct DataSerializerTraitsT<TileCoordsXYZD>
 {
     static void encode(OpenRCT2::IStream* stream, const TileCoordsXYZD& coord)
     {
-        stream->WriteValue(ByteSwapBE(coord.x));
-        stream->WriteValue(ByteSwapBE(coord.y));
-        stream->WriteValue(ByteSwapBE(coord.z));
-        stream->WriteValue(ByteSwapBE(coord.direction));
+        stream->WriteValue(SWAP_IF_LE(coord.x));
+        stream->WriteValue(SWAP_IF_LE(coord.y));
+        stream->WriteValue(SWAP_IF_LE(coord.z));
+        stream->WriteValue(SWAP_IF_LE(coord.direction));
     }
 
     static void decode(OpenRCT2::IStream* stream, TileCoordsXYZD& coord)
     {
-        auto x = ByteSwapBE(stream->ReadValue<int32_t>());
-        auto y = ByteSwapBE(stream->ReadValue<int32_t>());
-        auto z = ByteSwapBE(stream->ReadValue<int32_t>());
-        auto d = ByteSwapBE(stream->ReadValue<Direction>());
+        auto x = SWAP_IF_LE(stream->ReadValue<int32_t>());
+        auto y = SWAP_IF_LE(stream->ReadValue<int32_t>());
+        auto z = SWAP_IF_LE(stream->ReadValue<int32_t>());
+        auto d = SWAP_IF_LE(stream->ReadValue<Direction>());
         coord = TileCoordsXYZD{ x, y, z, d };
     }
 
@@ -874,12 +874,12 @@ template<typename T, T TNull, typename TTag> struct DataSerializerTraitsT<TIdent
 {
     static void encode(OpenRCT2::IStream* stream, const TIdentifier<T, TNull, TTag>& id)
     {
-        stream->WriteValue(ByteSwapBE(id.ToUnderlying()));
+        stream->WriteValue(SWAP_IF_LE(id.ToUnderlying()));
     }
 
     static void decode(OpenRCT2::IStream* stream, TIdentifier<T, TNull, TTag>& id)
     {
-        auto temp = ByteSwapBE(stream->ReadValue<T>());
+        auto temp = SWAP_IF_LE(stream->ReadValue<T>());
         id = TIdentifier<T, TNull, TTag>::FromUnderlying(temp);
     }
 

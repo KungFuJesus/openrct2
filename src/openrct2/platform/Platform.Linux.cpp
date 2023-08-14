@@ -65,7 +65,7 @@ namespace Platform
         static const utf8* searchLocations[] = {
             "./doc",
             "/usr/share/doc/openrct2",
-            DOCDIR,
+            //DOCDIR,
         };
         for (auto searchLocation : searchLocations)
         {
