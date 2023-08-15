@@ -481,8 +481,8 @@ namespace RCT1
                     case RCT12TileElementType::Surface:
                     {
                         auto surfaceEl = tileElement->AsSurface();
-                        auto surfaceStyle = surfaceEl->GetSurfaceStyle();
-                        auto edgeStyle = surfaceEl->GetEdgeStyle();
+                        auto surfaceStyle = SWAP_IF_BE(surfaceEl->GetSurfaceStyle());
+                        auto edgeStyle = SWAP_IF_BE(surfaceEl->GetEdgeStyle());
                         AddEntryForTerrainSurface(surfaceStyle);
                         AddEntryForTerrainEdge(edgeStyle);
                         break;
@@ -1594,7 +1594,7 @@ namespace RCT1
                     dst2->SetGrassLength(src2->GetGrassLength());
                     dst2->SetOwnership(src2->GetOwnership());
                     dst2->SetParkFences(src2->GetParkFences());
-                    dst2->SetWaterHeight(src2->GetWaterHeight());
+                    dst2->SetWaterHeight(SWAP_IF_BE(src2->GetWaterHeight()));
                     dst2->SetHasTrackThatNeedsWater(src2->HasTrackThatNeedsWater());
 
                     return 1;
@@ -1699,7 +1699,7 @@ namespace RCT1
                     const auto& rtd = GetRideTypeDescriptor(rideType);
                     if (rtd.HasFlag(RIDE_TYPE_FLAG_IS_MAZE))
                     {
-                        dst2->SetMazeEntry(src2->GetMazeEntry());
+                        dst2->SetMazeEntry(SWAP_IF_BE(src2->GetMazeEntry()));
                     }
 
                     if (TrackTypeMustBeMadeInvisible(rideType, trackType))

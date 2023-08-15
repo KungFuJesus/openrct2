@@ -669,8 +669,8 @@ namespace OpenRCT2
                 auto& arrayState = _arrayStack.emplace();
                 if (_mode == Mode::READING)
                 {
-                    arrayState.Count = SWAP_IF_BE(Read<uint32_t>());
-                    arrayState.ElementSize = SWAP_IF_BE(Read<uint32_t>());
+                    arrayState.Count = Read<uint32_t>();
+                    arrayState.ElementSize = Read<uint32_t>();
                     arrayState.LastPos = _buffer.GetPosition();
                     return arrayState.Count;
                 }
@@ -730,8 +730,8 @@ namespace OpenRCT2
                         throw std::runtime_error("Array data was written but no elements were added.");
                     }
                     _buffer.SetPosition(arrayState.StartPos);
-                    Write(SWAP_IF_BE(static_cast<uint32_t>(arrayState.Count)));
-                    Write(SWAP_IF_BE(static_cast<uint32_t>(arrayState.ElementSize)));
+                    Write(static_cast<uint32_t>(arrayState.Count));
+                    Write(static_cast<uint32_t>(arrayState.ElementSize));
                     _buffer.SetPosition(backupPos);
                 }
                 _arrayStack.pop();

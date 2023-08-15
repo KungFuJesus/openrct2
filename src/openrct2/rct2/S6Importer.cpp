@@ -328,7 +328,7 @@ namespace RCT2
 
             /* The entities themselves require parsing their types to know which
              * bytes to swap */
-            for (size_t i = 0 ; i < (size_t)EntityListId::Count; ++i) {
+            for (size_t i = 0 ; i < static_cast<size_t>(EntityListId::Count); ++i) {
                 _s6.EntityListsHead[i] = SWAP_IF_BE(_s6.EntityListsHead[i]);
                 _s6.EntityListsCount[i] = SWAP_IF_BE(_s6.EntityListsCount[i]);
             }

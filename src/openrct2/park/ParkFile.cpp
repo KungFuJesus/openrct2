@@ -224,8 +224,8 @@ namespace OpenRCT2
 
                 entry.ObjectiveType = cs.Read<uint8_t>();
                 entry.ObjectiveArg1 = cs.Read<uint8_t>();
-                entry.ObjectiveArg3 = SWAP_IF_BE(cs.Read<int16_t>());
-                entry.ObjectiveArg2 = SWAP_IF_BE(cs.Read<int32_t>());
+                entry.ObjectiveArg3 = cs.Read<int16_t>();
+                entry.ObjectiveArg2 = cs.Read<int32_t>();
 
                 entry.SourceGame = ScenarioSource::Other;
             });
@@ -282,11 +282,11 @@ namespace OpenRCT2
                      version](OrcaStream::ChunkStream& cs) {
                         ObjectEntryIndex surfaceCount = 0;
                         ObjectEntryIndex railingsCount = 0;
-                        auto numSubLists = SWAP_IF_BE(cs.Read<uint16_t>());
+                        auto numSubLists = cs.Read<uint16_t>();
                         for (size_t i = 0; i < numSubLists; i++)
                         {
-                            auto objectType = static_cast<ObjectType>(SWAP_IF_BE(cs.Read<uint16_t>()));
-                            auto subListSize = static_cast<ObjectEntryIndex>(SWAP_IF_BE(cs.Read<uint32_t>()));
+                            auto objectType = static_cast<ObjectType>(cs.Read<uint16_t>());
+                            auto subListSize = static_cast<ObjectEntryIndex>(cs.Read<uint32_t>());
                             for (ObjectEntryIndex j = 0; j < subListSize; j++)
                             {
                                 auto kind = cs.Read<uint8_t>();
@@ -384,13 +384,13 @@ namespace OpenRCT2
                     auto objectList = objManager.GetLoadedObjects();
 
                     // Write number of object sub lists
-                    cs.Write(SWAP_IF_BE(static_cast<uint16_t>(TransientObjectTypes.size())));
+                    cs.Write(static_cast<uint16_t>(TransientObjectTypes.size()));
                     for (auto objectType : TransientObjectTypes)
                     {
                         // Write sub list
                         const auto& list = objectList.GetList(objectType);
-                        cs.Write(SWAP_IF_BE(static_cast<uint16_t>(objectType)));
-                        cs.Write(SWAP_IF_BE(static_cast<uint32_t>(list.size())));
+                        cs.Write(static_cast<uint16_t>(objectType));
+                        cs.Write(static_cast<uint32_t>(list.size()));
                         for (const auto& entry : list)
                         {
                             if (entry.HasValue())
@@ -427,6 +427,7 @@ namespace OpenRCT2
         void ReadWriteScenarioChunk(OrcaStream& os)
         {
             os.ReadWriteChunk(ParkFileChunkType::SCENARIO, [&os](OrcaStream::ChunkStream& cs) {
+                LOG_VERBOSE("in RW Scenario Chunk");
                 cs.ReadWrite(gScenarioCategory);
                 ReadWriteStringTable(cs, gScenarioName, "en-GB");
 
@@ -711,6 +712,8 @@ namespace OpenRCT2
                         {
                             RCTObjectEntry entry;
                             cs.Read(&entry, sizeof(entry));
+                            entry.flags = SWAP_IF_BE(entry.flags);
+                            entry.checksum = SWAP_IF_BE(entry.checksum);
                             auto size = cs.Read<uint32_t>();
                             std::vector<uint8_t> data;
                             data.resize(size);
@@ -757,7 +760,14 @@ namespace OpenRCT2
                         if (String::IEquals(extension, ".dat"))
                         {
                             cs.Write(DESCRIPTOR_DAT);
+#if RCT2_ENDIANNESS == __ORDER_BIG_ENDIAN__
+                            auto oeLE = ori->ObjectEntry;
+                            oeLE.flags = SWAP_IF_BE(oeLE.flags);
+                            oeLE.checksum = SWAP_IF_BE(oeLE.checksum);
+                            cs.Write(&oeLE, sizeof(RCTObjectEntry));
+#else
                             cs.Write(&ori->ObjectEntry, sizeof(RCTObjectEntry));
+#endif
                         }
                         else if (String::IEquals(extension, ".parkobj"))
                         {
