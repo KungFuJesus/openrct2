@@ -73,6 +73,7 @@ namespace OpenRCT2::Title
                 Console::Error::WriteLine("Unable to open script.txt in '%s'", path.c_str());
                 return nullptr;
             }
+            LOG_VERBOSE("parsing script.txt from zip");
 
             saves = GetSaves(zip.get());
             isZip = true;
@@ -80,6 +81,7 @@ namespace OpenRCT2::Title
         else
         {
             auto scriptPath = Path::Combine(path, u8"script.txt");
+            LOG_VERBOSE("parsing script.txt from raw file (%s)", scriptPath.c_str());
             script = ReadScriptFile(scriptPath);
             if (script.empty())
             {
@@ -322,6 +324,7 @@ namespace OpenRCT2::Title
             auto ext = Path::GetExtension(name);
             if (String::IEquals(ext, ".sv6") || String::IEquals(ext, ".sc6") || String::IEquals(ext, ".park"))
             {
+                LOG_VERBOSE("found save: %s", name.c_str());
                 saves.push_back(std::move(name));
             }
         }
@@ -408,6 +411,7 @@ namespace OpenRCT2::Title
             if (command.has_value())
             {
                 commands.push_back(std::move(*command));
+            } else {
             }
         } while (fs.GetPosition() < fs.GetLength());
         return commands;
@@ -426,12 +430,8 @@ namespace OpenRCT2::Title
 
         while (true)
         {
-            int32_t c = 0;
-            if (stream->TryRead(&c, 1) != 1)
-            {
-                c = EOF;
-            }
-            if (c == '\n' || c == '\r' || c == EOF)
+            char c = 0;
+            if (stream->TryRead(&c, 1) != 1 || c == '\n' || c == '\r')
             {
                 parts[part][cindex] = 0;
                 return;
