@@ -46,7 +46,7 @@ void SceneryGroupObject::ReadLegacy(IReadObjectContext* context, IStream* stream
     stream->Seek(1, STREAM_SEEK_CURRENT); // Pad107;
     _legacyType.priority = stream->ReadValue<uint8_t>();
     stream->Seek(1, STREAM_SEEK_CURRENT); // Pad109;
-    _legacyType.entertainer_costumes = stream->ReadValue<uint32_t>();
+    _legacyType.entertainer_costumes = SWAP_IF_BE(stream->ReadValue<uint32_t>());
 
     GetStringTable().Read(context, stream, ObjectStringID::NAME);
     _items = ReadItems(stream);
@@ -140,6 +140,8 @@ std::vector<ObjectEntryDescriptor> SceneryGroupObject::ReadItems(IStream* stream
     {
         stream->Seek(-1, STREAM_SEEK_CURRENT);
         auto entry = stream->ReadValue<RCTObjectEntry>();
+        entry.flags = SWAP_IF_BE(entry.flags);
+        entry.checksum = SWAP_IF_BE(entry.checksum);
         items.emplace_back(entry);
     }
     return items;

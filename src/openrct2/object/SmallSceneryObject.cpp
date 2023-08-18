@@ -25,20 +25,22 @@
 void SmallSceneryObject::ReadLegacy(IReadObjectContext* context, OpenRCT2::IStream* stream)
 {
     stream->Seek(6, OpenRCT2::STREAM_SEEK_CURRENT);
-    _legacyType.flags = stream->ReadValue<uint32_t>();
+    _legacyType.flags = SWAP_IF_BE(stream->ReadValue<uint32_t>());
     _legacyType.height = stream->ReadValue<uint8_t>();
     _legacyType.tool_id = static_cast<CursorID>(stream->ReadValue<uint8_t>());
-    _legacyType.price = stream->ReadValue<int16_t>() * 10;
-    _legacyType.removal_price = stream->ReadValue<int16_t>() * 10;
+    _legacyType.price = SWAP_IF_BE(stream->ReadValue<int16_t>()) * 10;
+    _legacyType.removal_price = SWAP_IF_BE(stream->ReadValue<int16_t>()) * 10;
     stream->Seek(4, OpenRCT2::STREAM_SEEK_CURRENT);
-    _legacyType.animation_delay = stream->ReadValue<uint16_t>();
-    _legacyType.animation_mask = stream->ReadValue<uint16_t>();
-    _legacyType.num_frames = stream->ReadValue<uint16_t>();
+    _legacyType.animation_delay = SWAP_IF_BE(stream->ReadValue<uint16_t>());
+    _legacyType.animation_mask = SWAP_IF_BE(stream->ReadValue<uint16_t>());
+    _legacyType.num_frames = SWAP_IF_BE(stream->ReadValue<uint16_t>());
     _legacyType.scenery_tab_id = OBJECT_ENTRY_INDEX_NULL;
 
     GetStringTable().Read(context, stream, ObjectStringID::NAME);
 
     RCTObjectEntry sgEntry = stream->ReadValue<RCTObjectEntry>();
+    sgEntry.checksum = SWAP_IF_BE(sgEntry.checksum);
+    sgEntry.flags = SWAP_IF_BE(sgEntry.flags);
     SetPrimarySceneryGroup(ObjectEntryDescriptor(sgEntry));
 
     if (_legacyType.HasFlag(SMALL_SCENERY_FLAG_HAS_FRAME_OFFSETS))

@@ -39,7 +39,7 @@ void SawyerChunkReader::SkipChunk()
     try
     {
         auto header = _stream->ReadValue<SawyerCodingChunkHeader>();
-	header.length = SWAP_IF_BE(header.length);
+        header.length = SWAP_IF_BE(header.length);
         _stream->Seek(header.length, OpenRCT2::STREAM_SEEK_CURRENT);
     }
     catch (const std::exception&)
@@ -56,7 +56,7 @@ std::shared_ptr<SawyerChunk> SawyerChunkReader::ReadChunk()
     try
     {
         auto header = _stream->ReadValue<SawyerCodingChunkHeader>();
-	header.length = SWAP_IF_BE(header.length);
+        header.length = SWAP_IF_BE(header.length);
         if (header.length >= MAX_UNCOMPRESSED_CHUNK_SIZE)
             throw SawyerChunkException(EXCEPTION_MSG_CORRUPT_CHUNK_SIZE);
 

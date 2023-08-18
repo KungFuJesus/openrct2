@@ -395,6 +395,8 @@ std::optional<Gx> GfxLoadGx(const std::vector<uint8_t>& buffer)
         Gx gx;
 
         gx.header = istream.ReadValue<RCTG1Header>();
+        gx.header.num_entries = SWAP_IF_BE(gx.header.num_entries);
+        gx.header.total_size = SWAP_IF_BE(gx.header.total_size);
 
         // Read element headers
         gx.elements.resize(gx.header.num_entries);
@@ -405,9 +407,9 @@ std::optional<Gx> GfxLoadGx(const std::vector<uint8_t>& buffer)
 
         return std::make_optional(std::move(gx));
     }
-    catch (const std::exception&)
+    catch (const std::exception &ex)
     {
-        LOG_VERBOSE("Unable to load Gx graphics");
+        LOG_VERBOSE("Unable to load Gx graphics: %s", ex.what());
     }
     return std::nullopt;
 }

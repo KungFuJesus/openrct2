@@ -86,6 +86,7 @@ static AudioCodecKind GetAudioCodec(SDL_RWops* rw)
 
     auto originalPosition = SDL_RWtell(rw);
     auto magic = SDL_ReadLE32(rw);
+    LOG_VERBOSE("magic: %x", magic);
     SDL_RWseek(rw, originalPosition, RW_SEEK_SET);
     switch (magic)
     {

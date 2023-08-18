@@ -267,18 +267,24 @@ namespace ObjectFactory
 
             if (entry.GetType() != ObjectType::ScenarioText)
             {
+                LOG_VERBOSE("creating object");
                 result = CreateObject(entry.GetType());
+                LOG_VERBOSE("setting descriptor");
                 result->SetDescriptor(ObjectEntryDescriptor(entry));
 
                 utf8 objectName[DAT_NAME_LENGTH + 1] = { 0 };
+                LOG_VERBOSE("getting name");
                 ObjectEntryGetNameFixed(objectName, sizeof(objectName), &entry);
                 LOG_VERBOSE("  entry: { 0x%08X, \"%s\", 0x%08X }", entry.flags, objectName, entry.checksum);
 
+                LOG_VERBOSE("reading the chunk");
                 auto chunk = chunkReader.ReadChunk();
                 LOG_VERBOSE("  size: %zu", chunk->GetLength());
 
                 auto chunkStream = OpenRCT2::MemoryStream(chunk->GetData(), chunk->GetLength());
+                LOG_VERBOSE("Reading object context");
                 auto readContext = ReadObjectContext(objectRepository, objectName, loadImages, nullptr);
+                LOG_VERBOSE("Calling \"ReadObjectLegacy\"");
                 ReadObjectLegacy(*result, &readContext, &chunkStream);
                 if (readContext.WasError())
                 {

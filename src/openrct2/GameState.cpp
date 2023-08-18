@@ -65,6 +65,8 @@ void GameState::InitAll(const TileCoordsXY& mapSize)
     gInMapInitCode = true;
     gCurrentTicks = 0;
 
+    LOG_VERBOSE("init'ing map of size %d x %d", mapSize.x, mapSize.y);
+
     MapInit(mapSize);
     _park->Initialise();
     FinanceInit();

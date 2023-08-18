@@ -46,6 +46,7 @@
 #include "../peep/RideUseSystem.h"
 #include "../ride/ShopItem.h"
 #include "../ride/Vehicle.h"
+#include "../ride/RideData.h"
 #include "../scenario/Scenario.h"
 #include "../scenario/ScenarioRepository.h"
 #include "../scripting/ScriptEngine.h"
@@ -95,6 +96,63 @@ namespace OpenRCT2
         constexpr uint32_t PACKED_OBJECTS       = 0x80;
         // clang-format on
     }; // namespace ParkFileChunkType
+
+
+    static void swapTileEl(TileElement &te)
+    {
+        PathElement *pthEl;
+        TrackElement *trkEl;
+        SmallSceneryElement *ssEl;
+        LargeSceneryElement *lsEl;
+        WallElement *wEl;
+        EntranceElement *eEl;
+        BannerElement *bEl;
+        switch (te.GetType()) {
+            case TileElementType::Path:
+                pthEl = te.AsPath();
+                pthEl->SetSurfaceEntryIndex(ByteSwapBE(pthEl->GetSurfaceEntryIndex()));
+                pthEl->SetRailingsEntryIndex(ByteSwapBE(pthEl->GetRailingsEntryIndex()));
+                pthEl->SetRideIndex(RideId::FromUnderlying(ByteSwapBE(pthEl->GetRideIndex().ToUnderlying())));
+                break;
+            case TileElementType::Track:
+                trkEl = te.AsTrack();
+                trkEl->SetRideIndex(RideId::FromUnderlying(ByteSwapBE(trkEl->GetRideIndex().ToUnderlying())));
+                trkEl->SetRideType(ByteSwapBE(trkEl->GetRideType()));
+                if (GetRideTypeDescriptor(trkEl->GetRideType()).HasFlag(RIDE_TYPE_FLAG_IS_MAZE)) {
+                    trkEl->SetMazeEntry(ByteSwapBE(trkEl->GetMazeEntry()));
+                }
+                break;
+            case TileElementType::SmallScenery:
+                ssEl = te.AsSmallScenery();
+                ssEl->SetEntryIndex(ByteSwapBE(ssEl->GetEntryIndex()));
+                break;
+            case TileElementType::LargeScenery:
+                lsEl = te.AsLargeScenery();
+                lsEl->SetEntryIndex(ByteSwapBE(lsEl->GetEntryIndex()));
+                lsEl->SetBannerIndex(BannerIndex::FromUnderlying(ByteSwapBE(lsEl->GetBannerIndex().ToUnderlying())));
+                break;
+            case TileElementType::Wall:
+                wEl = te.AsWall();
+                wEl->SetEntryIndex(ByteSwapBE(wEl->GetEntryIndex()));
+                wEl->SetBannerIndex(BannerIndex::FromUnderlying(ByteSwapBE(wEl->GetBannerIndex().ToUnderlying())));
+                break;
+            case TileElementType::Banner:
+                bEl = te.AsBanner();
+                bEl->SetIndex(BannerIndex::FromUnderlying(ByteSwapBE(bEl->GetIndex().ToUnderlying())));
+                break;
+            case TileElementType::Entrance:
+                eEl = te.AsEntrance();
+                if (eEl->HasLegacyPathEntry()) {
+                    eEl->SetLegacyPathEntryIndex(ByteSwapBE(eEl->GetLegacyPathEntryIndex()));
+                } else {
+                    eEl->SetSurfaceEntryIndex(ByteSwapBE(eEl->GetSurfaceEntryIndex()));
+                }
+                eEl->SetRideIndex(RideId::FromUnderlying(ByteSwapBE(eEl->GetRideIndex().ToUnderlying())));
+                break;
+            default:
+                break;
+        }
+    }
 
     class ParkFile
     {
@@ -720,6 +778,7 @@ namespace OpenRCT2
                             cs.Read(data.data(), data.size());
 
                             auto legacyIdentifier = entry.GetName();
+                            LOG_VERBOSE("importing object of name \"%s\"", std::string{legacyIdentifier}.c_str());
                             if (objRepository.FindObjectLegacy(legacyIdentifier) == nullptr)
                             {
                                 objRepository.AddObjectFromFile(
@@ -1087,6 +1146,13 @@ namespace OpenRCT2
                         std::vector<TileElement> tileElements;
                         tileElements.resize(numElements);
                         cs.Read(tileElements.data(), tileElements.size() * sizeof(TileElement));
+
+#if RCT2_ENDIANNESS == __ORDER_BIG_ENDIAN__
+                        for (auto &t : tileElements) {
+                            swapTileEl(t);
+                        }
+#endif
+
                         SetTileElements(std::move(tileElements));
                         {
                             TileElementIterator it;
