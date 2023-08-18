@@ -934,9 +934,9 @@ namespace RCT2
             dst->status = static_cast<RideStatus>(src->Status);
 
             dst->default_name_number = SWAP_IF_BE(src->NameArgumentsNumber);
-            if (IsUserStringID(src->Name))
+            if (IsUserStringID(SWAP_IF_BE(src->Name)))
             {
-                dst->custom_name = GetUserString(src->Name);
+                dst->custom_name = GetUserString(SWAP_IF_BE(src->Name));
             }
             else
             {
