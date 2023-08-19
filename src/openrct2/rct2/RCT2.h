@@ -600,14 +600,24 @@ namespace RCT2
         {
             struct
             {
+#if RCT2_ENDIANNESS == __ORDER_LITTLE_ENDIAN__
                 uint8_t CurrentCar;  // 0x6B
                 uint8_t CurrentSeat; // 0x6C
+#else
+                uint8_t CurrentSeat; // 0x6C
+                uint8_t CurrentCar;  // 0x6B
+#endif
             };
             uint16_t TimeToSitdown; // 0x6B
             struct
             {
+#if RCT2_ENDIANNESS == __ORDER_LITTLE_ENDIAN__
                 uint8_t TimeToStand;   // 0x6B
                 uint8_t StandingFlags; // 0x6C
+#else
+                uint8_t StandingFlags; // 0x6C
+                uint8_t TimeToStand;   // 0x6B
+#endif
             };
         };
         uint8_t SpecialSprite;           // 0x6D

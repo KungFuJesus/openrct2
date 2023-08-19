@@ -339,14 +339,24 @@ struct Peep : EntityBase
     {
         struct
         {
+#if RCT2_ENDIANNESS == __ORDER_LITTLE_ENDIAN__
             uint8_t CurrentCar;
             uint8_t CurrentSeat;
+#else
+            uint8_t CurrentSeat;
+            uint8_t CurrentCar;
+#endif
         };
         uint16_t TimeToSitdown;
         struct
         {
+#if RCT2_ENDIANNESS == __ORDER_LITTLE_ENDIAN__
             uint8_t TimeToStand;
             uint8_t StandingFlags;
+#else
+            uint8_t TimeToStand;
+            uint8_t StandingFlags;
+#endif
         };
     };
     // Normally 0, 1 for carrying sliding board on spiral slide ride, 2 for carrying lawn mower
