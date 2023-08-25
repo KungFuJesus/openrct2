@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "../core/Endianness.h"
 #include "../world/Location.hpp"
 #include "Crypt.h"
 #include "FileStream.h"

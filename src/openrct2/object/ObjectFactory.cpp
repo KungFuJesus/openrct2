@@ -19,6 +19,7 @@
 #include "../core/MemoryStream.h"
 #include "../core/Path.hpp"
 #include "../core/String.hpp"
+#include "../core/Endianness.h"
 #include "../core/Zip.h"
 #include "../rct12/SawyerChunkReader.h"
 #include "AudioObject.h"

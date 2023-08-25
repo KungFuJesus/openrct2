@@ -25,7 +25,6 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include "core/Endianness.h"
 
 // Define MAX_PATH for various headers that don't want to include system headers
 // just for MAX_PATH

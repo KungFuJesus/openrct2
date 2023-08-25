@@ -11,6 +11,7 @@
 
 #include "SmallSceneryObject.h"
 
+#include "../core/Endianness.h"
 #include "../core/IStream.hpp"
 #include "../core/Json.hpp"
 #include "../core/Memory.hpp"

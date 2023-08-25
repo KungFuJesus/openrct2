@@ -12,6 +12,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <stdint.h>
 
 using ObjectEntryIndex = uint16_t;
 

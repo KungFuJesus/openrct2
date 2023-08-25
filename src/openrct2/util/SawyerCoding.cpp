@@ -9,6 +9,7 @@
 
 #include "SawyerCoding.h"
 
+#include "../core/Endianness.h"
 #include "../core/Numerics.hpp"
 #include "../platform/Platform.h"
 #include "../scenario/Scenario.h"

@@ -10,6 +10,7 @@
 #include "RCT12.h"
 
 #include "../core/String.hpp"
+#include "../core/Endianness.h"
 #include "../localisation/Formatting.h"
 #include "../localisation/Localisation.h"
 #include "../object/ObjectList.h"

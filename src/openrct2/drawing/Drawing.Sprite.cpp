@@ -16,6 +16,7 @@
 #include "../core/FileStream.h"
 #include "../core/MemoryStream.h"
 #include "../core/Path.hpp"
+#include "../core/Endianness.h"
 #include "../platform/Platform.h"
 #include "../sprites.h"
 #include "../ui/UiContext.h"

@@ -11,6 +11,7 @@
 
 #include "../core/IStream.hpp"
 #include "../core/Json.hpp"
+#include "../core/Endianness.h"
 #include "../drawing/Drawing.h"
 #include "../localisation/Language.h"
 #include "../object/Object.h"

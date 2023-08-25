@@ -18,6 +18,7 @@
 #include "../core/Json.hpp"
 #include "../core/Path.hpp"
 #include "../core/String.hpp"
+#include "../core/Endianness.h"
 #include "../drawing/ImageImporter.h"
 #include "../sprites.h"
 #include "Object.h"

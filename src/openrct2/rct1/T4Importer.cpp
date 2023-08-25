@@ -9,6 +9,7 @@
 
 #include "../TrackImporter.h"
 #include "../config/Config.h"
+#include "../core/Endianness.h"
 #include "../core/FileStream.h"
 #include "../core/MemoryStream.h"
 #include "../core/Path.hpp"

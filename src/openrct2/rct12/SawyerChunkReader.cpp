@@ -10,6 +10,7 @@
 #include "SawyerChunkReader.h"
 
 #include "../core/IStream.hpp"
+#include "../core/Endianness.h"
 #include "../core/Numerics.hpp"
 
 // malloc is very slow for large allocations in MSVC debug builds as it allocates
